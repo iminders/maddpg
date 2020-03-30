@@ -16,3 +16,4 @@ RUN cd $CODE_DIR/multiagent-particle-envs && rm -rf __pycache__ && \
     pip install -e .
 
 RUN pip install mpi4py
+RUN pip install tensorflow==1.13.1
