@@ -1,0 +1,11 @@
+version: '3.0'
+
+services:
+    test:
+        image: aiminders/rl:latest
+        command:
+            /bin/bash /root/maddpg/docker-compose.sh
+        environment:
+            NUM_ENV: ${NUM_ENV}
+        volumes:
+            - .:/root/maddpg
