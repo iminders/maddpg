@@ -58,7 +58,6 @@ RUN (pip --no-cache-dir install \
         setuptools \
         wheel \
         cython \
-        numpy \
         pytest \
         pytest-cov \
         prometheus_client \
