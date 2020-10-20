@@ -1,4 +1,4 @@
-name: Build
+name: GPU
 
 on:
   push:
@@ -11,9 +11,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Run build
+    - name: Run build gpu
       run: |
-        echo "build cpu"
         cd docker
         echo "build gpu"
         make gpu
