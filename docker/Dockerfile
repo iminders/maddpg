@@ -1,6 +1,6 @@
 FROM ubuntu:18.04
 
-ENV PYTHON_VERSION 3.6.4
+ENV PYTHON_VERSION 3.6.9
 ENV TF_PACKAGE tensorflow
 ENV TF_PACKAGE_VERSION 2.3.1
 
@@ -88,18 +88,7 @@ RUN (pip --no-cache-dir install \
 
 # 机器学习常用包
 RUN pip install --no-cache-dir ${TF_PACKAGE}${TF_PACKAGE_VERSION:+==${TF_PACKAGE_VERSION}}
-RUN (pip --no-cache-dir install \
-    tensorboard==2.3.0\
-    tensorflow-serving-api)
-
-# jupyter
-COPY bashrc /etc/bash.bashrc
-RUN chmod a+rwx /etc/bash.bashrc
-RUN pip install --no-cache-dir jupyter matplotlib
-# Pin ipykernel and nbformat; see https://github.com/ipython/ipykernel/issues/422
-RUN pip install --no-cache-dir jupyter_http_over_ws ipykernel==5.1.1 nbformat==4.4.0
-RUN jupyter serverextension enable --py jupyter_http_over_ws
-
+RUN (pip --no-cache-dir install tensorboard==2.3.0)
 
 # maddpg 依赖环境
 # install multiagent-particle-envs
