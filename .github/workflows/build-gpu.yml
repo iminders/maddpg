@@ -1,0 +1,21 @@
+name: GPU
+
+on:
+  push:
+    branches: [ docker ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Run build gpu
+      run: |
+        cd docker
+        echo "build gpu"
+        make gpu
+        echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+        docker push aiminders/rl:latest-gpu
+        docker logout
