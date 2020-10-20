@@ -92,8 +92,6 @@ RUN pip install --no-cache-dir ${TF_PACKAGE}${TF_PACKAGE_VERSION:+==${TF_PACKAGE
 RUN (pip --no-cache-dir install \
     tensorboard==2.3.0\
     tensorflow-serving-api)
-RUN apt-get update && apt-get install tensorflow-model-server
-RUN pip --no-cache-dir install tensorflow-serving-api
 
 # jupyter
 RUN pip install --no-cache-dir jupyter matplotlib
@@ -114,8 +112,6 @@ RUN git clone https://github.com/iminders/multiagent-particle-envs.git
 RUN cd $CODE_DIR/multiagent-particle-envs && rm -rf __pycache__ && \
     find . -name "*.pyc" -delete && \
     pip install -e .
-
-
 
 
 # Install Open MPI
@@ -139,7 +135,6 @@ RUN pip install --no-cache-dir mpi4py
 RUN rm -rf /tmp/* && \
 rm -rf /var/lib/apt/lists/* && \
 rm -rf /root/.cache/pip
-
 
 WORKDIR $CODE_DIR
 
