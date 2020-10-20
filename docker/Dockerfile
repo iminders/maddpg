@@ -22,6 +22,10 @@ RUN export DEBIAN_FRONTEND=noninteractive && apt-get install -y tzdata
 RUN ln -fs /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 RUN dpkg-reconfigure --frontend noninteractive tzdata
 
+# https://github.com/pypa/pip/issues/4924
+RUN mv /usr/bin/lsb_release /usr/bin/lsb_release.bak
+
+
 # 安装 Python
 WORKDIR /tmp/
 RUN (wget -P /tmp https://www.python.org/ftp/python/$PYTHON_VERSION/Python-$PYTHON_VERSION.tgz)
@@ -111,10 +115,32 @@ RUN cd $CODE_DIR/multiagent-particle-envs && rm -rf __pycache__ && \
     find . -name "*.pyc" -delete && \
     pip install -e .
 
+
+
+
+# Install Open MPI
+# download realese version from official website as openmpi github master is not always stable
+ARG OPENMPI_VERSION=openmpi-4.0.0
+ARG OPENMPI_DOWNLOAD_URL=https://www.open-mpi.org/software/ompi/v4.0/downloads/openmpi-4.0.0.tar.gz
+RUN mkdir /tmp/openmpi && \
+    cd /tmp/openmpi && \
+    wget ${OPENMPI_DOWNLOAD_URL} && \
+    tar zxf ${OPENMPI_VERSION}.tar.gz && \
+    cd ${OPENMPI_VERSION} && \
+    ./configure --enable-orterun-prefix-by-default && \
+    make -j $(nproc) all && \
+    make install && \
+    ldconfig && \
+    rm -rf /tmp/openmpi
+
+RUN pip install --no-cache-dir mpi4py
+
 # clean
 RUN rm -rf /tmp/* && \
 rm -rf /var/lib/apt/lists/* && \
 rm -rf /root/.cache/pip
 
-# https://github.com/pypa/pip/issues/4924
-RUN mv /usr/bin/lsb_release /usr/bin/lsb_release.bak
+
+WORKDIR $CODE_DIR
+
+CMD ["bin/bash"]
