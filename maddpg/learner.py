@@ -44,7 +44,7 @@ def serve(agent):
                         '1.performance/2.episode_avg_rew',
                         np.mean(episode_rews), episode)
                     logger.info(
-                        "[%5.2f%%]episode %8-d mean rew:%10.3f, %10.2fsecs" % (
+                        "[%5.2f%%]episode %-8d mean rew:%10.3f, %10.2fsecs" % (
                             episode * 100. / agent.args.num_episodes, record_i,
                             np.mean(episode_rews), time.time() - start))
             if i % agent.args.batch_size == 0 and episode > agent.args.warm_up:
