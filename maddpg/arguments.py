@@ -62,10 +62,12 @@ def parse_experiment_args():
     # worker settings
     parser.add_argument("--num_env", type=int, default=2,
                         help="explore environments number")
+    parser.add_argument('--warm_up', type=int, default=100)
+
     parser.add_argument('--role', type=str, default="learner",
                         help='learner/explorer')
     parser.add_argument('--host', type=str, default="127.0.0.1")
-    parser.add_argument('--port', type=int, default=7902)
+    parser.add_argument('--port', type=int, default=4932)
     parser.add_argument("--device", type=str, default="cpu",
                         help="run with gpu or only cpu")
     parser.add_argument('--seed', help='RNG seed', type=int, default=0)

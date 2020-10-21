@@ -1,14 +1,12 @@
 # -*- coding:utf-8 -*-
 
-import gc
-
 from maddpg.arguments import parse_experiment_args
 from maddpg.common.const import EXPLORER, LEARNER
 from maddpg.common.env_utils import make_env
 from maddpg.common.logger import logger
 from maddpg.common.tf_utils import set_global_seeds
 from maddpg.explorer import parallel_explore
-from maddpg.learner import make_learner_agent
+from maddpg.learner import make_learner_agent, serve
 
 if __name__ == '__main__':
     args = parse_experiment_args()
@@ -30,7 +28,5 @@ if __name__ == '__main__':
         agent = make_learner_agent(args, env.n, env.action_space,
                                    env.observation_space)
         env = None
-        gc.collect()
-
-        agent.serve()
+        serve(agent)
         logger.info("Finished, tensorboard --logdir=%s" % agent.tb_dir)

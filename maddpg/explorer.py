@@ -4,9 +4,10 @@ import time
 import zlib
 from multiprocessing import Process
 
+import numpy as np
 import zmq
 
-from maddpg.common.env_utils import make_env
+from maddpg.common.env_utils import make_env, uniform_action
 from maddpg.common.logger import logger
 
 
@@ -18,11 +19,11 @@ def explore(args, id):
     logger.info('zmq socket addr: tcp://%s:%d' % (args.host, args.port))
     env = make_env(args, id)
     obs = env.reset()
-    action = env.random_act()
+    action = uniform_action(env.action_space)
     i = 0
     while True:
         next_obs, reward, done, info = env.step(action)
-        sample = [obs, action, next_obs, reward, done, info, id]
+        sample = [obs, action, next_obs, reward, done, id]
         p = pickle.dumps(sample)
         z = zlib.compress(p)
         while True:
@@ -41,9 +42,8 @@ def explore(args, id):
             break
         obs = next_obs
         if done:
-            logger.info("[%d],%d,t:%s,score: %.5f, avg_return_to_twap: %.6f" %
-                        (id, i, info["current_time"], info["score"],
-                         info["avg_task_return_to_twap"]))
+            logger.info("env[%d] %d episode reward: %s, mean: %.5f" %
+                        (id, i, str(reward), np.mean(reward)))
             obs = env.reset()
 
 

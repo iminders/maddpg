@@ -8,5 +8,15 @@ ltest:
 	cd maddpg
 	python3 -m pytest
 
-run:
-	python3 -m maddpg.run --minio_secret=$MADDPG_MINIO_SECRET
+learn:
+	python3 -m maddpg.run
+
+explore:
+	python3 -m maddpg.run --role explorer
+
+# run:
+# 	nohup python3 -m maddpg.run --role explorer > /tmp/maddpg.explore.log 2>&1 &
+# 	make learn
+
+kill:
+	ps -ef | grep maddpg.run | awk '{print $2}' | xargs kill
