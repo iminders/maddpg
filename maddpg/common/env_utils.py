@@ -1,4 +1,6 @@
 # -*- coding:utf-8 -*-
+import numpy as np
+
 from maddpg.common.logger import logger
 
 
@@ -24,3 +26,8 @@ def make_env(args=None, id=0):
 
 def get_shapes(n_space):
     return [space.shape[0] for space in n_space]
+
+
+def uniform_action(action_space):
+    return [np.random.uniform(
+        space.low, space.high, space.shape) for space in action_space]
