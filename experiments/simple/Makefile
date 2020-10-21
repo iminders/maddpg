@@ -1,16 +1,9 @@
 clean:
-	rm -rf ./models
-	rm -rf ./tensorboard
-
-tensorboard:
-	tensorboard --logdir=./tensorboard
-
-explore:
-	echo exploring
+	rm -rf ./exp/models
+	rm -rf ./exp/tensorboard
 
 learn:
-	echo learning
+	python3 -m maddpg.run
 
-exp: clean
-	echo exploring
-	echo learning
+explore:
+	python3 -m maddpg.run --role explorer

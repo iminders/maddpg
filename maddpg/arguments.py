@@ -1,5 +1,7 @@
 import argparse
 import os
+import socket
+from datetime import datetime
 
 
 def parse_experiment_args():
@@ -31,9 +33,11 @@ def parse_experiment_args():
     # Checkpointing
     parser.add_argument("--exp_name", type=str, default="sample",
                         help="name of the experiment")
-    parser.add_argument("--model_dir", type=str, default="models",
+    parser.add_argument("--model_dir", type=str,
+                        default=os.path.join("exp", "models"),
                         help="directory for save state and model")
-    parser.add_argument("--tb_dir", type=str, default="tensorboard",
+    parser.add_argument("--tb_dir", type=str,
+                        default=os.path.join("exp", "tensorboard"),
                         help="directory where tensorboard data is saved")
     parser.add_argument('--minio_host', help='minio host',
                         default="49.234.229.193:5001",
@@ -48,7 +52,8 @@ def parse_experiment_args():
     parser.add_argument('--minio_bucket', help='minio bucket',
                         default="maddpg",
                         type=str)
-
+    parser.add_argument("--save_rate", type=int, default=1000,
+                        help="save model every this episodes are completed")
     # Evaluation
     parser.add_argument("--restore", action="store_true", default=False)
     parser.add_argument("--display", action="store_true", default=False)
@@ -62,7 +67,7 @@ def parse_experiment_args():
     # worker settings
     parser.add_argument("--num_env", type=int, default=2,
                         help="explore environments number")
-    parser.add_argument('--warm_up', type=int, default=100)
+    parser.add_argument('--warm_up', type=int, default=20000)
 
     parser.add_argument('--role', type=str, default="learner",
                         help='learner/explorer')
@@ -71,8 +76,11 @@ def parse_experiment_args():
     parser.add_argument("--device", type=str, default="cpu",
                         help="run with gpu or only cpu")
     parser.add_argument('--seed', help='RNG seed', type=int, default=0)
-    parser.add_argument('--runner', type=str, default='github')
-    parser.add_argument('--run_id', type=str, default='1')
+    parser.add_argument('--runner', type=str, default=socket.gethostname(),
+                        help="which machine runner experiment")
+    parser.add_argument('--run_id', type=str,
+                        default=datetime.now().strftime("%Y%m%d_%H%M%S"),
+                        help="the experiment run id")
     parser.add_argument("--debug", action="store_true", default=False)
 
     return parser.parse_args()

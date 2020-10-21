@@ -20,10 +20,15 @@ def explore(args, id):
     env = make_env(args, id)
     obs = env.reset()
     action = uniform_action(env.action_space)
-    i = 0
+    i, episode, in_episode_step = 0, 0, 0
+    episode_rews = [0] * args.save_rate
+
     while True:
-        next_obs, reward, done, info = env.step(action)
-        sample = [obs, action, next_obs, reward, done, id]
+        next_obs, rew, done, info = env.step(action)
+        i += 1
+        in_episode_step += 1
+        terminal = (in_episode_step >= args.max_episode_len)
+        sample = [obs, action, next_obs, rew, done, terminal]
         p = pickle.dumps(sample)
         z = zlib.compress(p)
         while True:
@@ -35,16 +40,21 @@ def explore(args, id):
             except zmq.ZMQError:
                 logger.error("send to zmq server[%s] error, sleep 1s" % host)
                 time.sleep(1)
-        i += 1
         if str(action) == "stop":
             logger.info("[%d],%d finished explore, learning server stoped" % (
                 id, i))
             break
         obs = next_obs
-        if done:
-            logger.info("env[%d] %d episode reward: %s, mean: %.5f" %
-                        (id, i, str(reward), np.mean(reward)))
+        if all(done) or terminal:
             obs = env.reset()
+            in_episode_step = 0
+            episode += 1
+            episode_rews[episode % args.save_rate] = np.mean(rew)
+            if episode % args.save_rate == 0:
+                episode_avg_rews = np.mean(episode_rews)
+                logger.info(
+                    "env[%d] step:%d, episode:%d episode avg rew: %.5f" %
+                    (id, i, episode, episode_avg_rews))
 
 
 def parallel_explore(args):

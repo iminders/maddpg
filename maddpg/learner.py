@@ -6,7 +6,6 @@ import zlib
 import numpy as np
 import tensorflow as tf
 import zmq
-from tqdm import tqdm
 
 from maddpg.agents.maddpg.agent import Agent
 from maddpg.common.logger import logger
@@ -25,34 +24,39 @@ def serve(agent):
     s = c.socket(zmq.REP)
     s.bind('tcp://127.0.0.1:%d' % agent.args.port)
     logger.info("zmq bind at tcp://127.0.0.1:%d" % agent.args.port)
-    i, iter, episode, stop_client_num = 0, 0, 0, 0
+    i, iter, episode, stop_client_num, record_i = 0, 0, 0, 0, 0
     start = time.time()
-    pbar = tqdm(total=agent.args.num_episodes)
+    explore_start = time.time()
+    episode_rews = [0] * agent.args.save_rate
     with agent.writer.as_default():
         while True:
             z = s.recv_pyobj()
             p = zlib.decompress(z)
             data = pickle.loads(p)
-            [obs, action, next_obs, reward, done, id] = data
-            agent.buffer.add(obs, action, reward, next_obs, done)
-            if done:
+            [obs, action, next_obs, rew, done, terminal] = data
+            agent.buffer.add(obs, action, rew, next_obs, done)
+            if all(done) or terminal:
                 episode += 1
-                pbar.update(episode)
-                # logger.info("env[%d] episode reward: %s" % (id, str(reward)))
-                tf.summary.scalar(
-                    '1.performance/2.episode_avg_reward',
-                    np.mean(reward), episode)
-
-            if i % agent.args.batch_size == 0 and i > agent.args.warm_up:
+                episode_rews[episode % agent.args.save_rate] = np.mean(rew)
+                if episode % agent.args.save_rate == 0:
+                    record_i += 1
+                    tf.summary.scalar(
+                        '1.performance/2.episode_avg_rew',
+                        np.mean(episode_rews), episode)
+                    logger.info(
+                        "[%5.2f%%]episode %8-d mean rew:%10.3f, %10.2fsecs" % (
+                            episode * 100. / agent.args.num_episodes, record_i,
+                            np.mean(episode_rews), time.time() - start))
+            if i % agent.args.batch_size == 0 and episode > agent.args.warm_up:
                 iter += 1
-                explore_time = time.time() - start
-                logger.info(
+                explore_time = time.time() - explore_start
+                logger.debug(
                     "serve collect %d explore samples spend %.3f secs" % (
                         agent.args.batch_size, explore_time))
                 tf.summary.scalar('3.time/2.explore', explore_time, iter)
                 agent.learn(iter)
                 end = time.time()
-                start = end
+                explore_start = end
             action = agent.action(obs)
             p = pickle.dumps(action)
             i += 1
