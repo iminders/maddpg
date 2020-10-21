@@ -1,6 +1,9 @@
 # -*- coding:utf-8 -*-
 
+import gc
 import time
+
+import numpy as np
 
 from maddpg.agents.base.agent import BaseAgent
 from maddpg.common.logger import logger
@@ -17,6 +20,9 @@ class Agent(BaseAgent):
         # TODO:
         return self.random_action()
 
-    def learn(self, iter=0):
-        logger.info("iter: %d" % iter)
+    def update_params(self, obs, act, rew, obs_t, done):
+        # TODO
         time.sleep(1)
+        [q_value, p_loss, q_loss, p_reg,
+            act_reg] = np.random.random(4).tolist()
+        return q_value, p_loss, q_loss, p_reg, act_reg

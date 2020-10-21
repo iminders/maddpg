@@ -1,8 +1,10 @@
 # -*- coding:utf-8 -*-
 
+import gc
+
 from maddpg.arguments import parse_experiment_args
 from maddpg.common.const import EXPLORER, LEARNER
-from maddpg.common.env_utils import get_act_shapes, get_obs_shapes, make_env
+from maddpg.common.env_utils import make_env
 from maddpg.common.logger import logger
 from maddpg.common.tf_utils import set_global_seeds
 from maddpg.explorer import parallel_explore
@@ -25,8 +27,10 @@ if __name__ == '__main__':
         logger.info("set global_seeds: %s" % str(args.seed))
         set_global_seeds(args.seed)
         env = make_env(args=args, id=0)
-        act_shapes = get_act_shapes(env)
-        obs_shapes = get_obs_shapes(env)
-        agent = make_learner_agent(args, act_shapes, obs_shapes)
+        agent = make_learner_agent(args, env.n, env.action_space,
+                                   env.observation_space)
+        env = None
+        gc.collect()
+
         agent.serve()
-        logger.info("Finished, tensorboard --logdir=%s" % args.tensorboard_dir)
+        logger.info("Finished, tensorboard --logdir=%s" % agent.tb_dir)
