@@ -22,13 +22,5 @@ def make_env(args=None, id=0):
     return env
 
 
-def get_act_shapes(env):
-    shapes = []
-    logger.info(str(env.action_space))
-    for space in env.action_space:
-        shapes.append(space.shape[0])
-    return shapes
-
-
-def get_obs_shapes(env):
-    return [env.observation_space[i].shape[0] for i in range(env.n)]
+def get_shapes(n_space):
+    return [space.shape[0] for space in n_space]

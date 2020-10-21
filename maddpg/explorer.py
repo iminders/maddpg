@@ -6,8 +6,8 @@ from multiprocessing import Process
 
 import zmq
 
-from tgym.envs.utils import make_env
-from tgym.logger import logger
+from maddpg.common.env_utils import make_env
+from maddpg.common.logger import logger
 
 
 def explore(args, id):
@@ -22,8 +22,7 @@ def explore(args, id):
     i = 0
     while True:
         next_obs, reward, done, info = env.step(action)
-        is_final = env.is_final_task()
-        sample = [obs, action, next_obs, reward, done, info, is_final, id]
+        sample = [obs, action, next_obs, reward, done, info, id]
         p = pickle.dumps(sample)
         z = zlib.compress(p)
         while True:
