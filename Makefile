@@ -9,4 +9,4 @@ ltest:
 	python3 -m pytest
 
 run:
-	python3 -m maddpg.run 
+	python3 -m maddpg.run --minio_secret=$MADDPG_MINIO_SECRET
