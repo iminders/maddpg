@@ -19,6 +19,8 @@ def parse_experiment_args():
                         help="policy for good agents")
     parser.add_argument("--adv_policy", type=str, default="maddpg",
                         help="policy of adversaries")
+    parser.add_argument("--print_net", action="store_true", default=False)
+
     # Core training parameters
     parser.add_argument("--qlr", type=float, default=3e-3,
                         help="learning rate for Adam optimizer")
@@ -30,6 +32,8 @@ def parse_experiment_args():
                         help="number of episodes to optimize at the same time")
     parser.add_argument("--num_units", type=int, default=64,
                         help="number of units in the mlp")
+    parser.add_argument("--dropout", type=float, default=None,
+                        help="dropout")
     # Checkpointing
     parser.add_argument("--exp_name", type=str, default="sample",
                         help="name of the experiment")
