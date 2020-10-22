@@ -1,0 +1,2 @@
+LEARNER = "learner"
+EXPLORER = "explorer"

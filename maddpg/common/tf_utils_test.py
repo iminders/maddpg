@@ -16,13 +16,14 @@ def test_set_global_seeds():
     expected = 0.8444218515250481
     assert expected == actual
 
-    actual = np.random.random([2, 2])
-    expected = 0.5488135039273248
-    assert expected == actual[0, 0]
+    actual = np.random.random([2, 2]).tolist()
+    expected = [[0.5488135039273248, 0.7151893663724195],
+                [0.6027633760716439, 0.5448831829968969]]
+    assert expected == actual
 
-    actual = tf.random.uniform(shape=()).numpy()
-    expected = 0.29197514
-    assert expected - actual < 1e-8
+    actual = tf.random.uniform(shape=(2, ), dtype=tf.float32).numpy().tolist()
+    expected = [0.29197514057159424, 0.2065664529800415]
+    assert expected == actual
 
 
 if __name__ == "__main__":

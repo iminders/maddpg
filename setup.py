@@ -13,7 +13,7 @@ def read(fname):
 
 def read_install_requires():
     reqs = [
-            'gym',
+            'gym==0.10.5',
             'minio',
             'pyzmq',
             'tensorflow==2.3.1',
