@@ -49,8 +49,31 @@ class Agent(BaseAgent):
         return [self.noise_pds[i].sample() + acts[i] for i in range(self.n)]
 
     def update_params(self, obs, act, rew, obs_next, done):
-        # TODO
-        time.sleep(1)
+        start = time.time()
+
+        # TODO: remove
         [q_value, p_loss, q_loss, p_reg,
             act_reg] = np.random.random(5).tolist()
+        update_time = time.time() - start
+        logger.debug("update_params use %.3 seconds" % update_time)
         return q_value, p_loss, q_loss, p_reg, act_reg
+
+    def learn(self, iter=0):
+        logger.debug("ddpg agent learn iter: %d" % iter)
+        obs, act, rew, obs_t, done = self.memory.sample(self.args.batch_size)
+        q_value, p_loss, q_loss, p_reg, act_reg, u_t = self.update_params(
+            obs, act, rew, obs_t, done)
+        avg_rew = np.mean(rew)
+        if iter <= 1:
+            return
+        self.writer.add_scalar(
+            '1.performance/3.sample_avg_reward', avg_rew, iter)
+        self.writer.add_scalar('1.performance/4.q_value', q_value, iter)
+        self.writer.add_scalar('2.train/p_loss', p_loss, iter)
+        self.writer.add_scalar('2.train/q_loss', q_loss, iter)
+        self.writer.add_scalar('2.train/reg_action', act_reg, iter)
+        self.writer.add_scalar('2.train/reg_policy', p_reg, iter)
+        self.writer.add_scalar('3.time/1.update', u_t, iter)
+
+        if iter % 100 == 0:
+            clear_memory()

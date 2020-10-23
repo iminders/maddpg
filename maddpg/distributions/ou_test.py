@@ -2,9 +2,9 @@ import unittest
 
 import numpy as np
 
-from tgym.agents.common.random_process import (GaussianProcess,
-                                               OrnsteinUhlenbeckProcess)
-from tgym.utils import set_global_seeds
+from maddpg.common.tf_utils import set_global_seeds
+from maddpg.distributions.gaussian import GaussianProcess
+from maddpg.distributions.ou import OrnsteinUhlenbeckProcess
 
 
 class TestRandomProcess(unittest.TestCase):
