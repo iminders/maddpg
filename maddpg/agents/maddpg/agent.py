@@ -3,7 +3,6 @@
 import time
 
 import numpy as np
-import tensorflow as tf
 
 from maddpg.agents.base.agent import BaseAgent
 from maddpg.common.logger import logger
@@ -42,9 +41,8 @@ class Agent(BaseAgent):
         return None
 
     def action(self, obs):
-        obs = np.asarray([obs])
-        act = [self.policys[i].predict(obs)[0] for i in range(self.n)]
-        return act
+        # TODO(liuwen): 合并运行，加快inference速度
+        return [self.policys[i].predict(obs)[0] for i in range(self.n)]
 
     def update_params(self, obs, act, rew, obs_next, done):
         # TODO

@@ -68,5 +68,7 @@ def parallel_explore(args):
 
 
 def merge_sample(obs, action, next_obs, rew, done, terminal):
-    return [np.concatenate(obs), np.concatenate(action),
-            np.concatenate(next_obs), rew, done, terminal]
+    return [np.asarray(np.concatenate(obs)),
+            np.asarray(np.concatenate(action)),
+            np.asarray(np.concatenate(next_obs)),
+            rew, done, terminal]
