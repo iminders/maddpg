@@ -6,6 +6,7 @@ import numpy as np
 
 from maddpg.agents.base.agent import BaseAgent
 from maddpg.common.logger import logger
+from maddpg.distributions.util import get_distribution
 from maddpg.nets.policy import get_policy_model
 from maddpg.nets.value import get_value_model
 
@@ -21,6 +22,8 @@ class Agent(BaseAgent):
                     (str(self.act_shapes), str(self.obs_shapes)))
         self.values = self.create_values()
         self.target_values = self.create_values()
+        self.noise_pds = [get_distribution(
+            self.act_spaces[i], args.noise_pd) for i in range(self.n)]
 
     def create_policys(self):
         policys = []
@@ -42,7 +45,8 @@ class Agent(BaseAgent):
 
     def action(self, obs):
         # TODO(liuwen): 合并运行，加快inference速度
-        return [self.policys[i].predict(obs)[0] for i in range(self.n)]
+        acts = [self.policys[i].predict(obs)[0] for i in range(self.n)]
+        return [self.noise_pds[i].sample() + acts[i] for i in range(self.n)]
 
     def update_params(self, obs, act, rew, obs_next, done):
         # TODO

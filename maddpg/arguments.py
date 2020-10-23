@@ -34,6 +34,8 @@ def parse_experiment_args():
                         help="number of units in the mlp")
     parser.add_argument("--dropout", type=float, default=None,
                         help="dropout")
+    parser.add_argument("--noise_pd", type=str, default="gaussian",
+                        help="noise probability distribution 探索时使用的随机方法")
     # Checkpointing
     parser.add_argument("--exp_name", type=str, default="sample",
                         help="name of the experiment")
