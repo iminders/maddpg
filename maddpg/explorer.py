@@ -28,7 +28,7 @@ def explore(args, id):
         i += 1
         in_episode_step += 1
         terminal = (in_episode_step >= args.max_episode_len)
-        sample = [obs, action, next_obs, rew, done, terminal]
+        sample = merge_sample(obs, action, next_obs, rew, done, terminal)
         p = pickle.dumps(sample)
         z = zlib.compress(p)
         while True:
@@ -65,3 +65,10 @@ def parallel_explore(args):
         processes.append(p)
     for p in processes:
         p.join()
+
+
+def merge_sample(obs, action, next_obs, rew, done, terminal):
+    return [np.asarray([np.concatenate(obs)]),
+            np.asarray([np.concatenate(action)]),
+            np.asarray([np.concatenate(next_obs)]),
+            rew, done, terminal]
