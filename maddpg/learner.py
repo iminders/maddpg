@@ -67,7 +67,7 @@ def serve(agent):
                 if episode % agent.args.save_rate == 0:
                     record_i += 1
                     tf.summary.scalar(
-                        '1.performance/2.episode_avg_rew',
+                        '1.performance/2.avg_episode_rew',
                         mean_reward, record_i)
                     if i > agent.args.warm_up:
                         log_msg = get_train_log(
