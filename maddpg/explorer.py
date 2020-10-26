@@ -52,7 +52,7 @@ def explore(args, id):
             episode_rews[episode % args.save_rate] = np.mean(rew)
             if episode % args.save_rate == 0:
                 episode_avg_rews = np.mean(episode_rews)
-                logger.info(
+                logger.debug(
                     "env[%d] step:%d, episode:%d episode avg rew: %.5f" %
                     (id, i, episode, episode_avg_rews))
 
@@ -68,7 +68,7 @@ def parallel_explore(args):
 
 
 def merge_sample(obs, action, next_obs, rew, done, terminal):
-    return [np.asarray([np.concatenate(obs)]),
-            np.asarray([np.concatenate(action)]),
-            np.asarray([np.concatenate(next_obs)]),
+    return [np.concatenate(obs),
+            np.concatenate(action),
+            np.concatenate(next_obs),
             rew, done, terminal]

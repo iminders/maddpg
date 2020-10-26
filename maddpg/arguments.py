@@ -28,6 +28,9 @@ def parse_experiment_args():
                         help="learning rate for Adam optimizer")
     parser.add_argument("--gamma", type=float, default=0.95,
                         help="discount factor")
+    parser.add_argument("--tau", type=float, default=0.97,
+                        help="discount factor")
+
     parser.add_argument("--batch_size", type=int, default=1024,
                         help="number of episodes to optimize at the same time")
     parser.add_argument("--num_units", type=int, default=64,
@@ -81,7 +84,7 @@ def parse_experiment_args():
     parser.add_argument('--port', type=int, default=4932)
     parser.add_argument("--device", type=str, default="cpu",
                         help="run with gpu or only cpu")
-    parser.add_argument('--seed', help='RNG seed', type=int, default=0)
+    parser.add_argument('--seed', help='random seed', type=int, default=0)
     parser.add_argument('--runner', type=str, default=socket.gethostname(),
                         help="which machine runner experiment")
     parser.add_argument('--run_id', type=str,

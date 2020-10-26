@@ -3,77 +3,120 @@
 import time
 
 import numpy as np
+import tensorflow as tf
 
-from maddpg.agents.base.agent import BaseAgent
+from maddpg.agents.base.ac_agent import ACAgent
 from maddpg.common.logger import logger
+from maddpg.common.tf_utils import update_target_variables
 from maddpg.distributions.util import get_distribution
-from maddpg.nets.policy import get_policy_model
-from maddpg.nets.value import get_value_model
+from maddpg.nets.actor import get_actor_model
+from maddpg.nets.critic import get_critic_model
 
 
-class Agent(BaseAgent):
+class Agent(ACAgent):
     def __init__(self, args, agent_num, act_spaces, obs_spaces):
         super(Agent, self).__init__(args, agent_num, act_spaces, obs_spaces)
-        logger.info("policys:act_shapes:%s, obs_shapes:%s" %
+        logger.info("actors:act_shapes:%s, obs_shapes:%s" %
                     (str(self.act_shapes), str(self.obs_shapes)))
-        self.policys = self.create_policys()
-        self.target_policys = self.create_policys()
-        logger.info("values:act_shapes:%s, obs_shapes:%s" %
+        self.actors = self.create_actors()
+        self.target_actors = self.create_actors()
+        logger.info("critics:act_shapes:%s, obs_shapes:%s" %
                     (str(self.act_shapes), str(self.obs_shapes)))
-        self.values = self.create_values()
-        self.target_values = self.create_values()
+        self.critics = self.create_critics()
+        self.target_critics = self.create_critics()
         self.noise_pds = [get_distribution(
             self.act_spaces[i], args.noise_pd) for i in range(self.n)]
+        self.actor_optimizer = tf.keras.optimizers.Adam(
+            learning_rate=args.plr, beta_1=0.9, beta_2=0.999, epsilon=1e-7,
+            amsgrad=False, name='Adam')
+        self.critic_optimizer = tf.keras.optimizers.Adam(
+            learning_rate=args.qlr, beta_1=0.9, beta_2=0.999, epsilon=1e-7,
+            amsgrad=False, name='Adam')
 
-    def create_policys(self):
-        policys = []
+    def create_actors(self):
+        actors = []
         for i in range(self.n):
-            m = get_policy_model(
+            m = get_actor_model(
                 i, self.args, self.act_shapes, self.obs_shapes)
-            policys.append(m)
-        return policys
+            actors.append(m)
+        return actors
 
-    def create_values(self):
-        values = []
+    def create_critics(self):
+        critics = []
         for i in range(self.n):
-            m = get_value_model(i, self.args, self.act_shapes, self.obs_shapes)
-            values.append(m)
-        return values
+            m = get_critic_model(
+                i, self.args, self.act_shapes, self.obs_shapes)
+            critics.append(m)
+        return critics
 
     def add_graph(self):
         return None
 
     def action(self, obs):
         # TODO(liuwen): 合并运行，加快inference速度
-        acts = [self.policys[i].predict(obs)[0] for i in range(self.n)]
+        batch_obs = np.asarray([obs])
+        acts = [self.actors[i](batch_obs)[0] for i in range(self.n)]
         return [self.noise_pds[i].sample() + acts[i] for i in range(self.n)]
 
-    def update_params(self, obs, act, rew, obs_next, done):
+    def update_params(self, obs, act_n, rew_n, next_obs, done_n):
         start = time.time()
 
-        # TODO: remove
-        [q_value, p_loss, q_loss, p_reg,
-            act_reg] = np.random.random(5).tolist()
+        obs_tf = tf.convert_to_tensor(obs, dtype=tf.float32)
+        obs_next_tf = tf.convert_to_tensor(next_obs, dtype=tf.float32)
+        act_n_tf = tf.convert_to_tensor(act_n, dtype=tf.float32)
+
+        critic_loss, actor_loss = 0.0, 0.0
+
+        next_target_acts = [self.target_actors[i](
+            next_obs) for i in range(self.n)]
+
+        next_target_qs = []
+        for i in range(self.n):
+            critic_input = tf.concat([obs_next_tf, next_target_acts[i]], 1)
+            next_target_qs.append(self.target_critics[i](critic_input))
+
+        target_qs = []
+        for i in range(self.n):
+            target_q = rew_n[i] + self.args.gamma * \
+                (1.0 - done_n[i]) * next_target_qs[i]
+            target_qs.append(target_q)
+
+        for i in range(self.n):
+            critic_input = tf.concat(
+                [obs_tf, act_n_tf[:, self.act_starts[i]: self.act_ends[i]]], 1)
+            with tf.GradientTape() as tape:
+                current_q = self.critics[i](critic_input)
+                loss = tf.reduce_mean(
+                    tf.keras.losses.MSE(current_q, target_qs[i]))
+            critic_grad = tape.gradient(
+                loss, self.critics[i].trainable_variables)
+            self.critic_optimizer.apply_gradients(
+                zip(critic_grad, self.critics[i].trainable_variables))
+            critic_loss += loss
+        # logger.debug(str(critic_loss))
+
+        for i in range(self.n):
+            with tf.GradientTape() as tape:
+                action = self.actors[i](obs)
+                action_reg = tf.norm(action, ord=2)
+                critic_input = tf.concat([obs_tf, action], 1)
+                loss = action_reg * 1e-3 - \
+                    tf.reduce_mean(self.critics[i](critic_input))
+
+            actor_grad = tape.gradient(
+                loss, self.actors[i].trainable_variables)
+            self.actor_optimizer.apply_gradients(
+                zip(actor_grad, self.actors[i].trainable_variables))
+            actor_loss += loss
+
+        for i in range(self.n):
+            update_target_variables(
+                self.actors[i].trainable_variables,
+                self.target_actors[i].trainable_variables, self.args.tau)
+            update_target_variables(
+                self.critics[i].trainable_variables,
+                self.target_critics[i].trainable_variables, self.args.tau)
+
         update_time = time.time() - start
-        logger.debug("update_params use %.3 seconds" % update_time)
-        return q_value, p_loss, q_loss, p_reg, act_reg
-
-    def learn(self, iter=0):
-        logger.debug("ddpg agent learn iter: %d" % iter)
-        obs, act, rew, obs_t, done = self.memory.sample(self.args.batch_size)
-        q_value, p_loss, q_loss, p_reg, act_reg, u_t = self.update_params(
-            obs, act, rew, obs_t, done)
-        avg_rew = np.mean(rew)
-        if iter <= 1:
-            return
-        self.writer.add_scalar(
-            '1.performance/3.sample_avg_reward', avg_rew, iter)
-        self.writer.add_scalar('1.performance/4.q_value', q_value, iter)
-        self.writer.add_scalar('2.train/p_loss', p_loss, iter)
-        self.writer.add_scalar('2.train/q_loss', q_loss, iter)
-        self.writer.add_scalar('2.train/reg_action', act_reg, iter)
-        self.writer.add_scalar('2.train/reg_policy', p_reg, iter)
-        self.writer.add_scalar('3.time/1.update', u_t, iter)
-
-        if iter % 100 == 0:
-            clear_memory()
+        logger.debug("update_params use %.3f seconds" % update_time)
+        return actor_loss, critic_loss, action_reg
