@@ -11,8 +11,9 @@ Distribution MADDPG using SEED_RL paradigm
 已经加速度比较明显
     - [ ] TODO: stream gRPC batch inference + recurrent states 实现stream效果
 - [ ] 随机过程(`maddpg.distributions`):
-    - [x] ou(OrnsteinUhlenbeckProcess)
-    - [x] GaussianProcess(原:DiagGaussianPdType, Box 连续空间)
+    - [x] `tensorflow uniform` 是目前`simple`使用的随机过程
+    - [ ] ou(OrnsteinUhlenbeckProcess): TODO
+    - [ ] GaussianProcess(原:DiagGaussianPdType, Box 连续空间)
     - [ ] SoftCategoricas(原:SoftCategoricalPdType, Discrete离散空间)
     - [ ] SoftMultiCategorical(原:SoftMultiCategoricalPdType, MultiDiscrete连续空间)
     - [ ] Bernoulli(原:BernoulliPdType， 多二值变量连续空间)
@@ -21,7 +22,7 @@ Distribution MADDPG using SEED_RL paradigm
 #### ubuntu/mac
     - 安装 `make install`
     - 单元测试 `make test`
-    - 场景测试simple: `make run`
+    - 场景测试simple: `make run num_agent=3`
 
 #### 源码安装
 - Known dependencies: Python 3, OpenAI gym (0.10.5), tensorflow (2.3.0)
