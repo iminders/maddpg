@@ -8,7 +8,9 @@ on:
         branches:
             - exp
             - lab
-# 需要在windows设置 https://github.com/microsoft/vscode-python/issues/2559
+# 需要在windows设置:
+#   https://github.com/microsoft/vscode-python/issues/2559
+#   https://github.com/docker/for-win/issues/868
 jobs:
     maddpg_exp:
         runs-on: lab
@@ -19,6 +21,7 @@ jobs:
             - name: MADDPG Experiment
               shell: powershell
               run: |
+                whoami
                 echo "run maddpg on lab"
                 docker system prune --force
                 docker-compose -f starter/docker_run.yml up
