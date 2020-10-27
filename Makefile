@@ -1,10 +1,13 @@
 install:
+	pip install -e . --user
+
+install3:
 	pip3 install -e . --user
 
-test:
+dtest:
 	docker-compose up
 
-ltest:
+test:
 	cd maddpg
 	python3 -m pytest
 
@@ -15,7 +18,7 @@ explore:
 	python3 -m maddpg.run --role explorer --save_rate=10 --num_env 2 --env_batch_size 4
 
 run: clean
-	python3 -m maddpg.run --save_rate=1000 --num_env 3  --env_batch_size 50 --warm_up 1100
+	python3 -m maddpg.run --save_rate=1000 --num_env 10  --env_batch_size 100 --warm_up 1500
 
 kill:
 	ps -ef | grep maddpg.run | awk '{print $2}' | xargs kill

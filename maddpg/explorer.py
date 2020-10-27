@@ -4,7 +4,6 @@ import time
 import zlib
 from multiprocessing import Process
 
-import numpy as np
 import zmq
 
 from maddpg.common.env_wrappers import BatchedEnvironment
@@ -56,6 +55,8 @@ def explore(args, id):
             logger.debug("batch_env[%d] step:%i, episode:%s" %
                          (id, i, str(episode)))
         obs = batch_env.reset_if_done(done, terminal, episode_step, episode)
+        if i % 10000 == 0:
+            logger.debug(str(id) + ":" + str(episode))
 
 
 def parallel_explore(args):

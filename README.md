@@ -4,7 +4,7 @@ Distribution MADDPG using SEED_RL paradigm
 ### 参考
 - [MADDPG](https://github.com/openai/maddpg)
 - [SEED_RL](https://github.com/google-research/seed_rl)
-
+- [Multi-Agent Actor-Critic for Mixed Cooperative-Competitive Environments](https://arxiv.org/pdf/1706.02275.pdf)
 ### Features
 - [ ] 加速
     - [x] zmq `server/client`(并没有实现seed rl的设计stream gRPC)，这种方式
@@ -18,12 +18,15 @@ Distribution MADDPG using SEED_RL paradigm
     - [ ] Bernoulli(原:BernoulliPdType， 多二值变量连续空间)
 
 ### 快速开始
-#### ubuntu/mac docker
-    - 测试 `make test`
-    - simeple: TODO
-#### windows anaconda
-    - 测试
-    - simple
+#### ubuntu/mac
+    - 安装 `make install`
+    - 单元测试 `make test`
+    - 场景测试simple: `make run`
+
+#### 源码安装
+- Known dependencies: Python 3, OpenAI gym (0.10.5), tensorflow (2.3.0)
+- 安装[Multi-Agent Particle Environments (MPE)](https://github.com/openai/multiagent-particle-envs)
+- To install, `cd` into the root directory and type `pip install -e .`
 
 ### 设计TODO
 

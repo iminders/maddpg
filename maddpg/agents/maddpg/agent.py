@@ -8,7 +8,6 @@ import tensorflow as tf
 from maddpg.agents.base.ac_agent import ACAgent
 from maddpg.common.logger import logger
 from maddpg.common.tf_utils import update_target_variables
-from maddpg.distributions.util import get_distribution
 from maddpg.nets.actor import get_actor_model
 from maddpg.nets.critic import get_critic_model
 
@@ -18,14 +17,19 @@ class Agent(ACAgent):
         super(Agent, self).__init__(args, agent_num, act_spaces, obs_spaces)
         logger.info("actors:act_shapes:%s, obs_shapes:%s" %
                     (str(self.act_shapes), str(self.obs_shapes)))
+        logger.info("agent 0 act high:" + str(act_spaces[0].high))
+        logger.info("agent 0 act low:" + str(act_spaces[0].low))
+
         self.actors = self.create_actors()
         self.target_actors = self.create_actors()
         logger.info("critics:act_shapes:%s, obs_shapes:%s" %
                     (str(self.act_shapes), str(self.obs_shapes)))
         self.critics = self.create_critics()
         self.target_critics = self.create_critics()
-        self.noise_pds = [get_distribution(
-            self.act_spaces[i], args.noise_pd) for i in range(self.n)]
+        self.sigma = args.sigma
+        self.decay_step = 300
+        self.decay_rate = 0.9
+        self.step = 0
         self.actor_optimizer = tf.keras.optimizers.Adam(
             learning_rate=args.plr, beta_1=0.9, beta_2=0.999, epsilon=1e-7,
             amsgrad=False, name='Adam')
@@ -53,15 +57,23 @@ class Agent(ACAgent):
         return None
 
     def action(self, obs):
+        self.step += 1
+        if self.step % self.decay_step == 0:
+            self.sigma = self.sigma * self.decay_rate
+            logger.info("sigma decay into: %.3f" % self.sigma)
         batch_obs = np.asarray(obs)
-        noises = [tf.stack(
-            [tf.convert_to_tensor(self.noise_pds[j].sample(), dtype=tf.float32) for i in range(
-                self.args.env_batch_size)]) for j in range(self.n)]
 
         acts = [self.actors[i](batch_obs) for i in range(self.n)]
+        for i in range(self.n):
+            acts[i] += tf.random.normal(
+                shape=acts[i].shape, mean=0., stddev=self.sigma,
+                dtype=tf.float32)
+            # TODO(liuwen): clip_by_value low high 按act_space.low high的对应设置
+            acts[i] = tf.clip_by_value(acts[i],
+                                       self.act_spaces[i].low[0],
+                                       self.act_spaces[i].high[0])
 
-        noise_acts = tf.stack(acts, axis=1) + tf.stack(noises, axis=1)
-        return noise_acts
+        return tf.stack(acts, axis=1)
 
     def update_params(self, obs, act_n, rew_n, next_obs, done_n):
         start = time.time()
@@ -87,8 +99,7 @@ class Agent(ACAgent):
             target_qs.append(target_q)
 
         for i in range(self.n):
-            critic_input = tf.concat(
-                [obs_tf, act_n_tf[:, self.act_starts[i]: self.act_ends[i]]], 1)
+            critic_input = tf.concat([obs_tf, act_n_tf[:, i, :]], 1)
             with tf.GradientTape() as tape:
                 current_q = self.critics[i](critic_input)
                 loss = tf.reduce_mean(

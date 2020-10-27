@@ -41,40 +41,48 @@ def serve(agent):
     s = c.socket(zmq.REP)
     s.bind('tcp://127.0.0.1:%d' % agent.args.port)
     logger.info("zmq bind at tcp://0.0.0.0:%d" % agent.args.port)
+
+    explore_size = agent.args.explore_size
+    env_batch_size = agent.args.env_batch_size
+
     i, iter, episode, stop_client_num, record_i = 0, 0, 0, 0, 0
+
+    episode_rews = [0] * agent.args.save_rate
+    mean_reward = 0.0
+
     start = time.time()
     batch_start = time.time()
     log_start = time.time()
-    episode_rews = [0] * agent.args.save_rate
+
     with agent.writer.as_default():
         while True:
             z = s.recv_pyobj()
             p = zlib.decompress(z)
             data = pickle.loads(p)
             [obs, action, next_obs, rew, done, terminal] = data
-            for j in range(agent.args.env_batch_size):
-                act = [action[j][k] for k in range(agent.n)]
-                act = np.concatenate(act, axis=0)
-                agent.buffer.add(obs[j], act, rew[j],
+            for j in range(env_batch_size):
+                agent.buffer.add(obs[j], action[j], rew[j],
                                  next_obs[j], done[j])
-            i += agent.args.env_batch_size
+            i += env_batch_size
 
-            mean_reward = np.mean(episode_rews)
-            if i % agent.args.explore_size == 0 and episode <= agent.args.warm_up:
+            if i % explore_size == 0 and episode <= agent.args.warm_up:
                 t = time.time()
                 if episode < agent.args.save_rate:
                     mean_reward = 0.0
+                else:
+                    mean_reward = np.mean(episode_rews)
                 logger.info(get_explore_log(i, agent.args.warm_up,
                             episode, mean_reward, t-batch_start, t-start))
                 batch_start = t
 
-            for j in range(agent.args.env_batch_size):
+            for j in range(env_batch_size):
                 if all(done[j]) or terminal[j]:
                     episode += 1
                     loc = episode % agent.args.save_rate
                     episode_rews[loc] = np.sum(rew[j])
                     if episode % agent.args.save_rate == 0:
                         record_i += 1
+                        mean_reward = np.mean(episode_rews)
                         tf.summary.scalar(
                             '1.performance/2.episode_reward',
                             mean_reward, record_i)
@@ -87,7 +95,7 @@ def serve(agent):
                             log_start = batch_end
                             logger.info(log_msg)
 
-            if i % agent.args.explore_size == 0 and episode > agent.args.warm_up:
+            if i % explore_size == 0 and episode > agent.args.warm_up:
                 iter += 1
                 explore_time = time.time() - batch_start
                 logger.debug(

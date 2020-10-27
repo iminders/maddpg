@@ -35,11 +35,11 @@ class BatchedEnvironment:
 
     def step(self, action_batch):
         """Does one step for all batched environments sequentially."""
-        num_envs = self._batch_size
         rewards = []
         dones = []
         infos = []
-        for i in range(num_envs):
+        for i in range(self._batch_size):
+            # action = [act for act in action_batch[i]]
             obs, reward, done, info = self._envs[i].step(action_batch[i])
             rewards.append(reward)
             dones.append(done)
@@ -61,7 +61,7 @@ class BatchedEnvironment:
         Returns:
           Observations for all environments.
         """
-        for i in range(len(self._envs)):
+        for i in range(self._batch_size):
             if all(done[i]) or terminal[i]:
                 episode[i] += 1
                 episode_step[i] = 0
