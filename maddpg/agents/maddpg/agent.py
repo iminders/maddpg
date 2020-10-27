@@ -109,7 +109,6 @@ class Agent(ACAgent):
             self.critic_optimizer.apply_gradients(
                 zip(critic_grad, self.critics[i].trainable_variables))
             critic_loss += loss
-        # logger.debug(str(critic_loss))
 
         for i in range(self.n):
             with tf.GradientTape() as tape:
