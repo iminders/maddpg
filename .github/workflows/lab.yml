@@ -18,6 +18,4 @@ jobs:
             - name: MADDPG Experiment
               shell: powershell
               run: |
-                docker-compose -f starter/docker_run.yml down
-                docker system prune --force
-                docker-compose -f starter/docker_run.yml up
+                docker-compose -f starter\docker_run.yml up
