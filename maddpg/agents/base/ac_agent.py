@@ -8,7 +8,6 @@ import numpy as np
 import tensorflow as tf
 
 from maddpg.common.env_utils import get_shapes, uniform_action
-from maddpg.common.logger import logger
 from maddpg.common.replay_buffer import ReplayBuffer
 from maddpg.common.storage import Storage
 
@@ -21,17 +20,6 @@ class ACAgent:
         self.act_shapes = get_shapes(act_spaces)
         self.obs_shapes = get_shapes(obs_spaces)
         self.n = agent_num
-        self.act_starts = []
-        self.act_ends = []
-        start, end = 0, 0
-        for i in range(self.n):
-            self.act_starts.append(start)
-            end = start + self.act_shapes[i]
-            self.act_ends.append(end)
-            start = end
-
-        logger.info("act_starts:" + str(self.act_starts))
-        logger.info("act_ends:" + str(self.act_ends))
         # 初始化目录
         self.tb_dir = self.must_get_dir(os.path.join(
             args.tb_dir, args.runner, args.run_id))

@@ -11,7 +11,7 @@ def parse_experiment_args():
                         help="name of the scenario script")
     parser.add_argument("--max_episode_len", type=int, default=25,
                         help="maximum episode length")
-    parser.add_argument("--num_episodes", type=int, default=60000,
+    parser.add_argument("--num_episodes", type=int, default=100000,
                         help="number of episodes")
     parser.add_argument("--num_adversaries", type=int, default=0,
                         help="number of adversaries")
@@ -22,12 +22,14 @@ def parse_experiment_args():
     parser.add_argument("--print_net", action="store_true", default=False)
 
     # Core training parameters
-    parser.add_argument("--qlr", type=float, default=3e-3,
+    parser.add_argument("--qlr", type=float, default=1e-3,
                         help="learning rate for Adam optimizer")
     parser.add_argument("--plr", type=float, default=1e-3,
                         help="learning rate for Adam optimizer")
     parser.add_argument("--gamma", type=float, default=0.95,
                         help="discount factor")
+    parser.add_argument("--sigma", type=float, default=1.0,
+                        help="explore noise sigma")
     parser.add_argument("--tau", type=float, default=0.97,
                         help="discount factor")
 

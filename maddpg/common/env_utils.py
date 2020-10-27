@@ -5,7 +5,7 @@ from maddpg.common.logger import logger
 
 
 def make_env(args=None, id=0):
-    logger.info("create environment: %d" % id)
+    logger.debug("create environment: %d" % id)
     from multiagent.environment import MultiAgentEnv
     import multiagent.scenarios as scenarios
     scenario_name = args.scenario
