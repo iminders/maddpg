@@ -1,4 +1,4 @@
-name: cq
+name: lab
 
 on:
     release:

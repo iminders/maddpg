@@ -7,4 +7,4 @@ services:
         command:
             make -f /root/maddpg/starter/Makefile run num_agent=20
         volumes:
-            - ..:/root/maddpg
+            - "..:/root/maddpg"
