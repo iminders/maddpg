@@ -28,3 +28,6 @@ tb:
 
 clean:
 	rm -rf exp
+
+drun: clean
+	python3 -m maddpg.run --save_rate=1000 --num_env 10  --env_batch_size 100 --warm_up 1500 --debug
