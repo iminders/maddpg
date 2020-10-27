@@ -7,7 +7,7 @@ Distribution MADDPG using SEED_RL paradigm
 - [Multi-Agent Actor-Critic for Mixed Cooperative-Competitive Environments](https://arxiv.org/pdf/1706.02275.pdf)
 ### Features
 - [ ] 加速
-    - [x] zmq `server/client`(并没有实现seed rl的设计stream gRPC)，这种方式
+    - [x] zmq `server/client`(并没有实现seed rl的设计stream gRPC)，zmq方式
 已经加速度比较明显
     - [ ] TODO: stream gRPC batch inference + recurrent states 实现stream效果
 - [ ] 随机过程(`maddpg.distributions`):
