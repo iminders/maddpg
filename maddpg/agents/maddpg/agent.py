@@ -17,8 +17,6 @@ class Agent(ACAgent):
         super(Agent, self).__init__(args, agent_num, act_spaces, obs_spaces)
         logger.info("actors:act_shapes:%s, obs_shapes:%s" %
                     (str(self.act_shapes), str(self.obs_shapes)))
-        logger.info("agent 0 act high:" + str(act_spaces[0].high))
-        logger.info("agent 0 act low:" + str(act_spaces[0].low))
 
         self.actors = self.create_actors()
         self.target_actors = self.create_actors()
@@ -68,10 +66,6 @@ class Agent(ACAgent):
             acts[i] += tf.random.normal(
                 shape=acts[i].shape, mean=0., stddev=self.sigma,
                 dtype=tf.float32)
-            # TODO(liuwen): clip_by_value low high 按act_space.low high的对应设置
-            acts[i] = tf.clip_by_value(acts[i],
-                                       self.act_spaces[i].low[0],
-                                       self.act_spaces[i].high[0])
 
         return tf.stack(acts, axis=1)
 

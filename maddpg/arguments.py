@@ -81,6 +81,8 @@ def parse_experiment_args():
     # worker settings
     parser.add_argument("--num_env", type=int, default=2,
                         help="explore environments number")
+    parser.add_argument("--num_agent", type=int, default=3,
+                        help="explore environments number")
     parser.add_argument("--env_batch_size", type=int, default=10,
                         help="explore batch environment size")
     parser.add_argument('--warm_up', type=int, default=20000)
