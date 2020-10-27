@@ -61,15 +61,12 @@ class ACAgent:
         avg_rew = np.mean(rew)
         if iter <= 1:
             return
-        tf.summary.scalar('1.performance/2.sample_avg_reward', avg_rew, iter)
+        tf.summary.scalar('1.performance/2.sample_reward', avg_rew, iter)
         tf.summary.scalar('2.train/actor_loss', actor_loss, iter)
         tf.summary.scalar('2.train/critic_loss', critic_loss, iter)
         tf.summary.scalar('2.train/action_reg', action_reg, iter)
         tf.summary.scalar('3.time/2.update', update_time, iter)
-        if iter % 100 == 0:
-            logger.info("actor loss: %.3f, critic loss: %.3f" % (
-                float(actor_loss), float(critic_loss)))
-        if iter % 100 == 0:
+        if iter % 1000 == 0:
             gc.collect()
 
     def must_get_dir(self, dir):

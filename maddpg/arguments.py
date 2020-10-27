@@ -33,6 +33,9 @@ def parse_experiment_args():
 
     parser.add_argument("--batch_size", type=int, default=1024,
                         help="number of episodes to optimize at the same time")
+    parser.add_argument("--explore_size", type=int, default=100,
+                        help="number of episodes to optimize at the same time")
+
     parser.add_argument("--num_units", type=int, default=64,
                         help="number of units in the mlp")
     parser.add_argument("--dropout", type=float, default=None,
@@ -76,6 +79,8 @@ def parse_experiment_args():
     # worker settings
     parser.add_argument("--num_env", type=int, default=2,
                         help="explore environments number")
+    parser.add_argument("--env_batch_size", type=int, default=10,
+                        help="explore batch environment size")
     parser.add_argument('--warm_up', type=int, default=20000)
 
     parser.add_argument('--role', type=str, default="learner",

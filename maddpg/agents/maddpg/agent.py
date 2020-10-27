@@ -53,10 +53,15 @@ class Agent(ACAgent):
         return None
 
     def action(self, obs):
-        # TODO(liuwen): 合并运行，加快inference速度
-        batch_obs = np.asarray([obs])
-        acts = [self.actors[i](batch_obs)[0] for i in range(self.n)]
-        return [self.noise_pds[i].sample() + acts[i] for i in range(self.n)]
+        batch_obs = np.asarray(obs)
+        noises = [tf.stack(
+            [tf.convert_to_tensor(self.noise_pds[j].sample(), dtype=tf.float32) for i in range(
+                self.args.env_batch_size)]) for j in range(self.n)]
+
+        acts = [self.actors[i](batch_obs) for i in range(self.n)]
+
+        noise_acts = tf.stack(acts, axis=1) + tf.stack(noises, axis=1)
+        return noise_acts
 
     def update_params(self, obs, act_n, rew_n, next_obs, done_n):
         start = time.time()
@@ -65,7 +70,7 @@ class Agent(ACAgent):
         obs_next_tf = tf.convert_to_tensor(next_obs, dtype=tf.float32)
         act_n_tf = tf.convert_to_tensor(act_n, dtype=tf.float32)
 
-        critic_loss, actor_loss = 0.0, 0.0
+        critic_loss, actor_loss, action_reg = 0.0, 0.0, 0.0
 
         next_target_acts = [self.target_actors[i](
             next_obs) for i in range(self.n)]
@@ -98,10 +103,10 @@ class Agent(ACAgent):
         for i in range(self.n):
             with tf.GradientTape() as tape:
                 action = self.actors[i](obs)
-                action_reg = tf.norm(action, ord=2)
+                reg = tf.norm(action, ord=2) * 1e-3
                 critic_input = tf.concat([obs_tf, action], 1)
-                loss = action_reg * 1e-3 - \
-                    tf.reduce_mean(self.critics[i](critic_input))
+                loss = reg - tf.reduce_mean(self.critics[i](critic_input))
+                action_reg += reg
 
             actor_grad = tape.gradient(
                 loss, self.actors[i].trainable_variables)

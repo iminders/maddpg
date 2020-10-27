@@ -22,15 +22,15 @@ def learn(args):
 
 def explore_and_learn(args):
     processes = []
-
+    # learn
     p = Process(target=learn, args=(args,))
     p.start()
     processes.append(p)
+    # explore
+    p = Process(target=parallel_explore, args=(args,))
+    p.start()
+    processes.append(p)
 
-    for i in range(args.num_env):
-        p = Process(target=parallel_explore, args=(args,))
-        p.start()
-        processes.append(p)
     for p in processes:
         p.join()
 
@@ -52,3 +52,4 @@ if __name__ == '__main__':
         logger.info("set global_seeds: %s" % str(args.seed))
         set_global_seeds(args.seed)
         explore_and_learn(args)
+        # learn(args)

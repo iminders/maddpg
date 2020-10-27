@@ -7,8 +7,13 @@ from multiprocessing import Process
 import numpy as np
 import zmq
 
-from maddpg.common.env_utils import make_env, uniform_action
+from maddpg.common.env_wrappers import BatchedEnvironment
 from maddpg.common.logger import logger
+
+
+def increment(items, size):
+    for i in range(size):
+        items[i] += 1
 
 
 def explore(args, id):
@@ -17,18 +22,20 @@ def explore(args, id):
     host = 'tcp://%s:%d' % (args.host, args.port)
     s.connect(host)
     logger.info('zmq socket addr: tcp://%s:%d' % (args.host, args.port))
-    env = make_env(args, id)
-    obs = env.reset()
-    action = uniform_action(env.action_space)
-    i, episode, in_episode_step = 0, 0, 0
-    episode_rews = [0] * args.save_rate
+    batch_env = BatchedEnvironment(args, id)
+    obs = batch_env.reset()
+    action = batch_env.uniform_action()
+    i = 0
+    n = args.env_batch_size
+    episode = [0] * n
+    episode_step = [0] * n
 
     while True:
-        next_obs, rew, done, info = env.step(action)
-        i += 1
-        in_episode_step += 1
-        terminal = (in_episode_step >= args.max_episode_len)
-        sample = merge_sample(obs, action, next_obs, rew, done, terminal)
+        next_obs, rew, done, info = batch_env.step(action)
+        i += n
+        increment(episode_step, n)
+        terminal = [episode_step[i] >= args.max_episode_len for i in range(n)]
+        sample = [obs, action, next_obs, rew, done, terminal]
         p = pickle.dumps(sample)
         z = zlib.compress(p)
         while True:
@@ -44,17 +51,11 @@ def explore(args, id):
             logger.info("[%d],%d finished explore, learning server stoped" % (
                 id, i))
             break
-        obs = next_obs
-        if all(done) or terminal:
-            obs = env.reset()
-            in_episode_step = 0
-            episode += 1
-            episode_rews[episode % args.save_rate] = np.mean(rew)
-            if episode % args.save_rate == 0:
-                episode_avg_rews = np.mean(episode_rews)
-                logger.debug(
-                    "env[%d] step:%d, episode:%d episode avg rew: %.5f" %
-                    (id, i, episode, episode_avg_rews))
+
+        if i % (10 * args.save_rate) == 0:
+            logger.debug("batch_env[%d] step:%i, episode:%s" %
+                         (id, i, str(episode)))
+        obs = batch_env.reset_if_done(done, terminal, episode_step, episode)
 
 
 def parallel_explore(args):
@@ -65,10 +66,3 @@ def parallel_explore(args):
         processes.append(p)
     for p in processes:
         p.join()
-
-
-def merge_sample(obs, action, next_obs, rew, done, terminal):
-    return [np.concatenate(obs),
-            np.concatenate(action),
-            np.concatenate(next_obs),
-            rew, done, terminal]
