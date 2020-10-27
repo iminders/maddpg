@@ -19,5 +19,6 @@ jobs:
             - name: MADDPG Experiment
               shell: powershell
               run: |
+                echo "run maddpg on lab"
                 docker system prune --force
                 docker-compose -f starter/docker_run.yml up
