@@ -1,0 +1,23 @@
+name: cq
+
+on:
+    release:
+        types:
+            - created
+    push:
+        branches:
+            - exp
+            - lab
+jobs:
+    maddpg_exp:
+        runs-on: lab
+        timeout-minutes: 36000
+        steps:
+            - uses: actions/checkout@v2
+
+            - name: MADDPG Experiment
+              run: |
+                echo "run experiment on lab"
+                docker-compose -f starter/docker_run.yml down
+                docker system prune --force
+                docker-compose -f starter/docker_run.yml up

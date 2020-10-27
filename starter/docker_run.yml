@@ -1,0 +1,10 @@
+version: '3.0'
+
+services:
+    maddpg:
+        image: aiminders/rl:latest
+        container_name: maddpg
+        command:
+            make -f /root/maddpg/starter/Makefile run num_agent=20
+        volumes:
+            - ..:/root/maddpg
