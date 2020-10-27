@@ -12,6 +12,7 @@ def make_env(args=None, id=0):
     benchmark = args.benchmark
     # load scenario from script
     scenario = scenarios.load(scenario_name + ".py").Scenario()
+    logger.info(scenario_name)
     # create world
     world = scenario.make_world()
     # create multiagent environment
@@ -21,16 +22,22 @@ def make_env(args=None, id=0):
     else:
         env = MultiAgentEnv(world, scenario.reset_world, scenario.reward,
                             scenario.observation)
+    logger.info(str(env.action_space))
     return env
 
 
-def get_shapes(n_space):
-    return [space.shape[0] for space in n_space]
+def get_shapes(in_space):
+    logger.info(str(in_space))
+    from gym import spaces
+    if isinstance(in_space, spaces.Box):
+        return [space.shape[0] for space in in_space]
+    if isinstance(in_space[0], spaces.Discrete):
+        return [space.shape[0] for space in in_space]
+    raise NotImplementedError
 
 
 def uniform_action(action_space):
-    return [np.random.uniform(
-        space.low, space.high, space.shape) for space in action_space]
+    return [np.random.uniform(size=space.shape) for space in action_space]
 
 
 def print_space_type(act_space):

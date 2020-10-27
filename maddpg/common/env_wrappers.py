@@ -79,8 +79,7 @@ class BatchedEnvironment:
     def uniform_action(self):
         acts = []
         for e in self._envs:
-            act = [np.random.uniform(
-                s.low, s.high, s.shape) for s in e.action_space]
+            act = [np.random.uniform(size=s.shape) for s in e.action_space]
             acts.append(act)
 
         return acts
