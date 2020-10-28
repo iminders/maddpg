@@ -5,6 +5,6 @@ services:
         image: aiminders/rl:latest
         container_name: maddpg
         command:
-            make -f /root/maddpg/Makefile run
+            cat /root/maddpg/Makefile
         volumes:
             - "..:/root/maddpg"
