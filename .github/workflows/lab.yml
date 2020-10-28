@@ -10,7 +10,6 @@ on:
             - lab
 # 需要在windows设置:
 #   https://github.com/microsoft/vscode-python/issues/2559
-#   https://github.com/docker/for-win/issues/868
 jobs:
     maddpg_exp:
         runs-on: lab
