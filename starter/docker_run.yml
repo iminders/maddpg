@@ -5,6 +5,6 @@ services:
         image: aiminders/rl:latest
         container_name: maddpg
         command:
-            make -f /root/maddpg/Makefile run num_agent=20
+            bash /root/maddpg/starter/docker_run.sh
         volumes:
             - "..:/root/maddpg"
