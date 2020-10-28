@@ -1,4 +1,4 @@
-## maddpg ![Test](https://github.com/iminders/maddpg/workflows/Test/badge.svg) ![experiment](https://github.com/iminders/maddpg/workflows/experiment/badge.svg)
+## maddpg ![Test](https://github.com/iminders/maddpg/workflows/Test/badge.svg) ![Experiment](https://github.com/iminders/maddpg/workflows/Experiment/badge.svg)
 Distribution MADDPG using SEED_RL paradigm
 
 ### 参考
@@ -32,7 +32,22 @@ Distribution MADDPG using SEED_RL paradigm
 ### 设计TODO
 
 ### 关键代码说明
+- 核心算法实现: `maddpg.agents.maddpg.agent`, `maddpg.agents.maddpg.base`
+- NN tf2实现: `maddpg.nets.actor`, `maddpg.nets.critic`, `maddpg.nets.mpl`
+- 运行进程
+    - 探索进程: `maddpg.explorer`
+    - 学习进程: `maddpg.learner`
+    - 参数设置: `maddpg.arguments`
+    - 运行入口: `maddpg.run`
+    - 公共模块: 环境，常数，日志，云存储等, `maddpg.common.*`
+- 其他:
+    zmq: `experiments.zmq`, zmq server/client模式回归测试
 
 ### 实验
-- 速度: TODO
-- 收敛: TODO
+- 速度:
+    - `simple agent_num=3`, 平均batch时间约为原版的1/3, [运行日志](https://github.com/iminders/maddpg/runs/1320405588?check_suite_focus=true)
+    - `simple agent_num=20`, TODO
+
+- 收敛:
+    - `simple agent_num=3`, 比原版更优, [运行日志](https://github.com/iminders/maddpg/runs/1320405588?check_suite_focus=true)
+    - `simple agent_num=20`, TODO
