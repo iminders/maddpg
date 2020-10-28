@@ -6,7 +6,6 @@ services:
         container_name: maddpg
         working_dir: /root/maddpg/
         command:
-            # bash /root/maddpg/starter/docker_run.sh
-            ls -l /root/maddpg/
+            bash /root/maddpg/starter/docker_run.sh
         volumes:
-            - D:\runners:/root/maddpg
+            - ..:/root/maddpg
