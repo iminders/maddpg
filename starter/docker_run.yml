@@ -5,6 +5,6 @@ services:
         image: aiminders/rl:latest
         container_name: maddpg
         command:
-            bash /root/maddpg/starter/docker_run.sh
+            make run
         volumes:
             - "..:/root/maddpg"
