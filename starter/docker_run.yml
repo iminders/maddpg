@@ -9,4 +9,4 @@ services:
             # bash /root/maddpg/starter/docker_run.sh
             ls -l /root/maddpg/
         volumes:
-            - ../maddpg/:/root/maddpg
+            - D:\runners:/root/maddpg
