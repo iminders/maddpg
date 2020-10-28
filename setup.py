@@ -16,7 +16,7 @@ def read_install_requires():
             'gym==0.10.5',
             'minio',
             'pyzmq',
-            'tensorflow==2.3.1',
+            'tensorflow>=2.3.1',
             'tensorboard==2.3.0']
     return reqs
 

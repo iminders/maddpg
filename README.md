@@ -1,4 +1,4 @@
-## maddpg
+## maddpg ![Test](https://github.com/iminders/maddpg/workflows/Test/badge.svg) ![experiment](https://github.com/iminders/maddpg/workflows/experiment/badge.svg)
 Distribution MADDPG using SEED_RL paradigm
 
 ### 参考

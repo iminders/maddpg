@@ -1,0 +1,27 @@
+name: experiment
+
+on:
+    release:
+        types:
+            - created
+    push:
+        branches:
+            - exp
+            - lab
+# 需要在windows设置:
+#   https://github.com/microsoft/vscode-python/issues/2559
+jobs:
+    maddpg_exp:
+        runs-on: lab
+        timeout-minutes: 36000
+        steps:
+            - uses: actions/checkout@v2
+
+            - name: MADDPG Experiment
+              shell: cmd
+              run: |
+                whoami
+                echo "run maddpg on lab"
+                DEL exp
+                pip install -e . --user
+                python -m maddpg.run --save_rate=1000 --num_env 10  --env_batch_size 100 --warm_up 1500 --num_agent 3

@@ -1,0 +1,12 @@
+version: '3.0'
+
+services:
+    maddpg:
+        image: aiminders/rl:latest
+        container_name: maddpg
+        working_dir: /root/maddpg/
+        command:
+            # bash /root/maddpg/starter/docker_run.sh
+            ls -l /root/maddpg/
+        volumes:
+            - D:\runners:/root/maddpg
