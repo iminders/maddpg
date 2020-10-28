@@ -7,4 +7,4 @@ services:
         command:
             ls -l /root/maddpg/
         volumes:
-            - "..:/root/maddpg"
+            - ..:/root/maddpg
