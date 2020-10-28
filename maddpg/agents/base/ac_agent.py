@@ -8,6 +8,7 @@ import numpy as np
 import tensorflow as tf
 
 from maddpg.common.env_utils import get_shapes, uniform_action
+from maddpg.common.logger import logger
 from maddpg.common.replay_buffer import ReplayBuffer
 from maddpg.common.storage import Storage
 
@@ -61,3 +62,14 @@ class ACAgent:
         if not os.path.exists(dir):
             os.makedirs(dir)
         return dir
+
+    def upload_minio(self):
+        logger.info("upload model into minio")
+        # upload tensorboard
+        dest_obj_name = "exp/tensorboard/%s/%s.tar.gz" % (
+            self.args.runner, self.experiment_name)
+        self.stoarge.tar_and_fput(self.tb_dir, dest_obj_name)
+        # upload model
+        dest_obj_name = "exps/model/%s/%s.tar.gz" % (
+            self.args.runner, self.experiment_name)
+        self.stoarge.tar_and_fput(self.model_dir, dest_obj_name)
