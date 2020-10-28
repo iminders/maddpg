@@ -23,4 +23,4 @@ jobs:
                 whoami
                 echo "run maddpg on lab"
                 pip install -e . --user
-                python -m maddpg.run --save_rate=1000 --num_env 10  --env_batch_size 100 --warm_up 1500 --num_agent 3
+                python -m maddpg.run --save_rate=1000 --num_env 10  --env_batch_size 100 --warm_up 1500 --num_agent 20
