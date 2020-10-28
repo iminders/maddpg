@@ -18,7 +18,7 @@ jobs:
             - uses: actions/checkout@v2
 
             - name: MADDPG Experiment
-              shell: cmd
+              shell: powershell
               run: |
                 whoami
                 echo "run maddpg on lab"
