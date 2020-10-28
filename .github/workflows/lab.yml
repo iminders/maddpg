@@ -22,5 +22,5 @@ jobs:
               run: |
                 whoami
                 echo "run maddpg on lab"
-                docker system prune --force
-                docker-compose -f starter/docker_run.yml up
+                cd maddpg && pip install -e .
+                python -m maddpg.run --save_rate=1000 --num_env 10  --env_batch_size 100 --warm_up 1500 --num_agent 3
