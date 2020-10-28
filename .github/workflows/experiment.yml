@@ -1,4 +1,4 @@
-name: lab
+name: experiment
 
 on:
     release:
