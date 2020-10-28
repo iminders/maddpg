@@ -8,4 +8,4 @@ services:
             # bash /root/maddpg/starter/docker_run.sh
             ls -l /root/maddpg/
         volumes:
-            - ${PWD}:/root/maddpg
+            - D:\runners\maddpg\_work\maddpg\maddpg:/root/maddpg
