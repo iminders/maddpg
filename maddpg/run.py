@@ -17,6 +17,7 @@ def learn(args):
                                env.observation_space)
     env = None
     serve(agent)
+    agent.upload_minio()
     logger.info("Finished, tensorboard --logdir=%s" % agent.tb_dir)
 
 

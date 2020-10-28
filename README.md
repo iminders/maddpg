@@ -45,9 +45,11 @@ Distribution MADDPG using SEED_RL paradigm
 
 ### 实验
 - 速度:
-    - `simple agent_num=3`, 平均batch时间约为原版的1/3, [运行日志](https://github.com/iminders/maddpg/runs/1320405588?check_suite_focus=true)
-    - `simple agent_num=20`, TODO
+    - 纯CPU环境
+        - `simple agent_num=3`, 平均batch时间约为原版的1/3, [运行日志](https://github.com/iminders/maddpg/runs/1320405588?check_suite_focus=true)
+        - `simple agent_num=20`, TODO
 
 - 收敛:
-    - `simple agent_num=3`, 比原版更优, [运行日志](https://github.com/iminders/maddpg/runs/1320405588?check_suite_focus=true)
-    - `simple agent_num=20`, TODO
+    - 纯CPU环境
+        - `simple agent_num=3`, 比原版更优, [运行日志](https://github.com/iminders/maddpg/runs/1320405588?check_suite_focus=true)
+        - `simple agent_num=20`, TODO
