@@ -58,7 +58,7 @@ class Agent(ACAgent):
         self.step += len(obs)
         if self.step % self.decay_step == 0:
             self.sigma = max(self.sigma * self.decay_rate, self.min_sigma)
-            logger.info("sigma decay to: %.3f" % self.sigma)
+            logger.info("sigma decay to: %.3f,at %d" % (self.sigma, self.step))
         batch_obs = np.asarray(obs)
 
         acts = [self.actors[i](batch_obs) for i in range(self.n)]
