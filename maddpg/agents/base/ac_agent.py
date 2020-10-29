@@ -83,9 +83,8 @@ class ACAgent:
         return self.args.model_dir
 
     def save(self):
-        f = open(self.score_path, "a")
-        f.write("%10.3f, %-d\n" % (self.best_score, self.step))
-        f.close()
+        with open(self.score_path, "a") as f:
+            f.write("%10.3f, %-d\n" % (self.best_score, self.step))
         for i in range(self.n):
             self.actors[i].save_weights(self.actor_perfix + str(i))
             self.critics[i].save_weights(self.critic_perfix_path + str(i))
