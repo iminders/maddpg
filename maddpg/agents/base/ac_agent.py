@@ -69,7 +69,7 @@ class ACAgent:
     def upload_minio(self):
         logger.info("upload model into minio")
         # upload tensorboard
-        dest_obj_name = "exp/tensorboard/%s/%s.tar.gz" % (
+        dest_obj_name = "exps/tensorboard/%s/%s.tar.gz" % (
             self.args.runner, self.args.run_id)
         self.stoarge.tar_and_fput(self.tb_dir, dest_obj_name)
         # upload model

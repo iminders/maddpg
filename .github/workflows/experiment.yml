@@ -23,7 +23,7 @@ jobs:
                 whoami
                 echo "run maddpg on lab"
                 pip install -e . --user
-                python -m maddpg.run --save_rate=1000 --num_env 10  --env_batch_size 100 --warm_up 1500 --num_agent 20 --num_episodes 100000 --decay_rate 0.95
+                python -m maddpg.run --num_env 10 --env_batch_size 100 --num_agent 20 --explore_size 1000
               env:
                   MADDPG_MINIO_SECRET: ${{ secrets.MADDPG_MINIO_SECRET }}
                   MADDPG_MINIO_KEY: ${{ secrets.MADDPG_MINIO_KEY }}

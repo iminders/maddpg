@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 
-from multiprocessing import Process
+from multiprocessing import Process, cpu_count
 
 from maddpg.arguments import parse_experiment_args
 from maddpg.common.const import EXPLORER, LEARNER
@@ -22,6 +22,7 @@ def learn(args):
 
 
 def explore_and_learn(args):
+    logger.info("CPU count:{}".format(cpu_count()))
     processes = []
     # learn
     p = Process(target=learn, args=(args,))
