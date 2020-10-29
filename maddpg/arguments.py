@@ -30,7 +30,7 @@ def parse_experiment_args():
                         help="discount factor")
     parser.add_argument("--sigma", type=float, default=1.0,
                         help="explore noise sigma")
-    parser.add_argument("--decay_rate", type=float, default=0.9,
+    parser.add_argument("--decay_rate", type=float, default=0.98,
                         help="explore noise sigma decay rate")
     parser.add_argument("--min_sigma", type=float, default=0.2,
                         help="explore minimal sigma")
