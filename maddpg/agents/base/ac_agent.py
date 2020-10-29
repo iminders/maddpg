@@ -28,7 +28,9 @@ class ACAgent:
             args.model_dir, args.runner, args.run_id))
         self.actor_perfix = os.path.join(self.model_dir, "policy.")
         self.critic_perfix = os.path.join(self.model_dir, "critic.")
+        self.score_path = os.path.join(self.model_dir, "score.txt")
         self.writer = tf.summary.create_file_writer(self.tb_dir)
+        self.step = 0
         # s3云存储
         self.stoarge = Storage(args)
         self.buffer = ReplayBuffer(1e6)
@@ -81,6 +83,9 @@ class ACAgent:
         return self.args.model_dir
 
     def save(self):
-        for i in self.n:
+        f = open(self.score_path, "a")
+        f.write("%10.3f, %-d\n" % (self.best_score, self.step))
+        f.close()
+        for i in range(self.n):
             self.actors[i].save_weights(self.actor_perfix + str(i))
             self.critics[i].save_weights(self.critic_perfix_path + str(i))
