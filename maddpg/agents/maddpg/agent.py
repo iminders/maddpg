@@ -89,7 +89,6 @@ class Agent(ACAgent):
             obs_next_tf) for i in range(self.n)]
 
         # batch_size * n * act_size
-        # next_target_act = tf.stack(next_target_acts, axis=1)
         next_target_qs = []
         for i in range(self.n):
             # batch_size * (obs_size + act_szie)
@@ -132,11 +131,11 @@ class Agent(ACAgent):
 
         for i in range(self.n):
             update_target_variables(
-                self.actors[i].trainable_variables,
-                self.target_actors[i].trainable_variables, self.args.tau)
+                self.target_actors[i].trainable_variables,
+                self.actors[i].trainable_variables, self.args.tau)
             update_target_variables(
-                self.critics[i].trainable_variables,
-                self.target_critics[i].trainable_variables, self.args.tau)
+                self.target_critics[i].trainable_variables,
+                self.critics[i].trainable_variables, self.args.tau)
 
         update_time = time.time() - start
         logger.debug("update_params use %.3f seconds" % update_time)
