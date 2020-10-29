@@ -28,7 +28,7 @@ def parse_experiment_args():
                         help="learning rate for Adam optimizer")
     parser.add_argument("--gamma", type=float, default=0.95,
                         help="discount factor")
-    parser.add_argument("--sigma", type=float, default=0.1,
+    parser.add_argument("--sigma", type=float, default=1.0,
                         help="explore noise sigma")
     parser.add_argument("--decay_rate", type=float, default=0.95,
                         help="explore noise sigma decay rate")
