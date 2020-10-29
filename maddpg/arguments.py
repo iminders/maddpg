@@ -34,7 +34,7 @@ def parse_experiment_args():
                         help="explore noise sigma decay rate")
     parser.add_argument("--min_sigma", type=float, default=0.2,
                         help="explore minimal sigma")
-    parser.add_argument("--decay_step", type=int, default=70000,
+    parser.add_argument("--decay_step", type=int, default=50000,
                         help="explore noise sigma")
 
     parser.add_argument("--tau", type=float, default=0.97,
@@ -92,7 +92,7 @@ def parse_experiment_args():
                         help="explore environments number")
     parser.add_argument("--env_batch_size", type=int, default=10,
                         help="explore batch environment size")
-    parser.add_argument('--warm_up', type=int, default=20000)
+    parser.add_argument('--warm_up', type=int, default=1500)
 
     parser.add_argument('--role', type=str, default="learner",
                         help='learner/explorer')
