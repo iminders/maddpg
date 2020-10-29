@@ -27,7 +27,7 @@ class Agent(ACAgent):
         self.sigma = args.sigma
         self.decay_step = args.decay_step
         self.decay_rate = args.decay_rate
-        self.min_sigma = 0.1
+        self.min_sigma = args.min_sigma
         self.actor_optimizer = tf.keras.optimizers.Adam(
             learning_rate=args.plr, beta_1=0.9, beta_2=0.999, epsilon=1e-7,
             amsgrad=False, name='Adam')
