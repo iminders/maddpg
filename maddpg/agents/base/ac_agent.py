@@ -26,6 +26,8 @@ class ACAgent:
             args.tb_dir, args.runner, args.run_id))
         self.model_dir = self.must_get_dir(os.path.join(
             args.model_dir, args.runner, args.run_id))
+        self.actor_perfix = os.path.join(self.model_dir, "policy.")
+        self.critic_perfix = os.path.join(self.model_dir, "critic.")
         self.writer = tf.summary.create_file_writer(self.tb_dir)
         # s3云存储
         self.stoarge = Storage(args)
@@ -73,3 +75,11 @@ class ACAgent:
         dest_obj_name = "exps/model/%s/%s.tar.gz" % (
             self.args.runner, self.experiment_name)
         self.stoarge.tar_and_fput(self.model_dir, dest_obj_name)
+
+    def get_model_dir(self):
+        return self.args.model_dir
+
+    def save(self):
+        for i in self.n:
+            self.actors[i].save_weights(self.actor_perfix + str(i))
+            self.critics[i].save_weights(self.critic_perfix_path + str(i))

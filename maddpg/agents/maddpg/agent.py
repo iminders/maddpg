@@ -27,7 +27,7 @@ class Agent(ACAgent):
         self.sigma = args.sigma
         self.decay_step = 50000
         self.decay_rate = 0.93
-        self.min_sigma = 0.01
+        self.min_sigma = 0.1
         self.step = 0
         self.actor_optimizer = tf.keras.optimizers.Adam(
             learning_rate=args.plr, beta_1=0.9, beta_2=0.999, epsilon=1e-7,
@@ -59,7 +59,7 @@ class Agent(ACAgent):
         self.step += len(obs)
         if self.step % self.decay_step == 0:
             self.sigma = max(self.sigma * self.decay_rate, self.min_sigma)
-            logger.debug("sigma decay into: %.3f" % self.sigma)
+            logger.info("sigma decay to: %.3f" % self.sigma)
         batch_obs = np.asarray(obs)
 
         acts = [self.actors[i](batch_obs) for i in range(self.n)]
