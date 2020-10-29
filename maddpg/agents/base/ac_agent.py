@@ -26,10 +26,13 @@ class ACAgent:
             args.tb_dir, args.runner, args.run_id))
         self.model_dir = self.must_get_dir(os.path.join(
             args.model_dir, args.runner, args.run_id))
+        self.score_path = os.path.join(self.model_dir, "score.txt")
         self.writer = tf.summary.create_file_writer(self.tb_dir)
+        self.step = 0
         # s3云存储
         self.stoarge = Storage(args)
         self.buffer = ReplayBuffer(1e6)
+        self.best_score = -1e6
 
     def random_action(self):
         return uniform_action(self.act_spaces)
@@ -67,9 +70,23 @@ class ACAgent:
         logger.info("upload model into minio")
         # upload tensorboard
         dest_obj_name = "exp/tensorboard/%s/%s.tar.gz" % (
-            self.args.runner, self.experiment_name)
+            self.args.runner, self.args.run_id)
         self.stoarge.tar_and_fput(self.tb_dir, dest_obj_name)
         # upload model
         dest_obj_name = "exps/model/%s/%s.tar.gz" % (
-            self.args.runner, self.experiment_name)
+            self.args.runner, self.args.run_id)
         self.stoarge.tar_and_fput(self.model_dir, dest_obj_name)
+
+    def get_model_dir(self):
+        return self.args.model_dir
+
+    def save(self):
+        with open(self.score_path, "a") as f:
+            f.write("%10.3f, %-d\n" % (self.best_score, self.step))
+        for i in range(self.n):
+            actor_dir = os.path.join(self.model_dir, str(i),  "actor")
+            self.must_get_dir(actor_dir)
+            self.actors[i].save_weights(os.path.join(actor_dir, "actor"))
+            critic_dir = os.path.join(self.model_dir, str(i),  "critic")
+            self.must_get_dir(critic_dir)
+            self.critics[i].save_weights(os.path.join(actor_dir, "critic"))
