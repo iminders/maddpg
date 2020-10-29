@@ -25,8 +25,8 @@ class Agent(ACAgent):
         self.critics = self.create_critics()
         self.target_critics = self.create_critics()
         self.sigma = args.sigma
-        self.decay_step = 100000
-        self.decay_rate = 0.95
+        self.decay_step = args.decay_step
+        self.decay_rate = args.decay_rate
         self.min_sigma = 0.1
         self.actor_optimizer = tf.keras.optimizers.Adam(
             learning_rate=args.plr, beta_1=0.9, beta_2=0.999, epsilon=1e-7,
