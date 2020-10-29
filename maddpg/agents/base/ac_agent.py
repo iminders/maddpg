@@ -32,6 +32,7 @@ class ACAgent:
         # s3云存储
         self.stoarge = Storage(args)
         self.buffer = ReplayBuffer(1e6)
+        self.best_score = -1e6
 
     def random_action(self):
         return uniform_action(self.act_spaces)

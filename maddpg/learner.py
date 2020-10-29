@@ -83,6 +83,9 @@ def serve(agent):
                     if episode % agent.args.save_rate == 0:
                         record_i += 1
                         mean_reward = np.mean(episode_rews)
+                        if mean_reward > agent.best_score:
+                            agent.best_score = mean_reward
+                            agent.save()
                         tf.summary.scalar(
                             '1.performance/2.episode_reward',
                             mean_reward, record_i)
