@@ -26,8 +26,6 @@ class ACAgent:
             args.tb_dir, args.runner, args.run_id))
         self.model_dir = self.must_get_dir(os.path.join(
             args.model_dir, args.runner, args.run_id))
-        self.actor_perfix = os.path.join(self.model_dir, "policy.")
-        self.critic_perfix = os.path.join(self.model_dir, "critic.")
         self.score_path = os.path.join(self.model_dir, "score.txt")
         self.writer = tf.summary.create_file_writer(self.tb_dir)
         self.step = 0
@@ -86,5 +84,9 @@ class ACAgent:
         with open(self.score_path, "a") as f:
             f.write("%10.3f, %-d\n" % (self.best_score, self.step))
         for i in range(self.n):
-            self.actors[i].save_weights(self.actor_perfix + str(i))
-            self.critics[i].save_weights(self.critic_perfix_path + str(i))
+            actor_dir = os.path.join(self.model_dir, str(i),  "actor")
+            self.must_get_dir(actor_dir)
+            self.actors[i].save_weights(os.path.join(actor_dir, "actor"))
+            critic_dir = os.path.join(self.model_dir, str(i),  "critic")
+            self.must_get_dir(critic_dir)
+            self.critics[i].save_weights(os.path.join(actor_dir, "critic"))
