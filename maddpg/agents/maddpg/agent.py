@@ -72,6 +72,7 @@ class Agent(ACAgent):
     # TODO(liuwen): tensor转换放到explore端执行，降低learner负载
     def update_params(self, obs, act_n, rew_n, next_obs, done_n):
         start = time.time()
+        batch_size = obs.shape[0]
         # batch_size * obs_size
         obs_tf = tf.convert_to_tensor(obs, dtype=tf.float32)
         # batch_size * obs_size
@@ -89,8 +90,13 @@ class Agent(ACAgent):
 
         for i in range(self.n):
             next_target_act = self.target_actors[i](obs_next_tf)
+            next_target_act_n = tf.Variable(act_n_tf)
+            next_target_act_n[:, i, :].assign(next_target_act)
+
             # batch_size * (obs_size + act_szie)
-            critic_input = tf.concat([obs_next_tf, next_target_act], 1)
+            critic_input = tf.concat(
+                [obs_next_tf, tf.reshape(next_target_act_n, [batch_size, -1])],
+                1)
             # batch_size * 1
             next_target_q = self.target_critics[i](critic_input)
             # batch_size * 1
@@ -101,25 +107,29 @@ class Agent(ACAgent):
                 (tf.ones(done.shape) - done) * next_target_q
 
             # critic train
-            # batch_size * (obs_size + act_size)
-            critic_input = tf.concat([obs_tf, act_n_tf[:, i, :]], 1)
             with tf.GradientTape() as tape:
                 # batch_size * 1
-                current_q = self.critics[i](critic_input)
-                loss = tf.reduce_mean(tf.keras.losses.MSE(current_q, target_q))
-                critic_grad = tape.gradient(
-                    loss, self.critics[i].trainable_variables)
-                self.critic_optimizers[i].apply_gradients(
-                    zip(critic_grad, self.critics[i].trainable_variables))
-                critic_loss += loss
+                loss = tf.reduce_mean(tf.keras.losses.mse(
+                    self.critics[i](tf.concat(
+                        [obs_tf, tf.reshape(act_n_tf, [batch_size, -1])],
+                        1)), target_q))
+
+            critic_grad = tape.gradient(
+                loss, self.critics[i].trainable_variables)
+            self.critic_optimizers[i].apply_gradients(
+                zip(critic_grad, self.critics[i].trainable_variables))
+            critic_loss += loss
+
             # actor train
             with tf.GradientTape() as tape:
                 # batch_size * act_size
-                action = self.actors[i](obs_tf)
-                reg = tf.norm(action, ord=2) * 1e-3
-                # batch_size * (obs_size + act_szie)
-                critic_input = tf.concat([obs_tf, action], 1)
-                loss = reg - tf.reduce_mean(self.critics[i](critic_input))
+                act = self.actors[i](obs_tf)
+                act_n = tf.Variable(act_n_tf)
+                act_n[:, i, :].assign(act)
+                reg = tf.norm(act, ord=2) * 1e-3
+                loss = reg + tf.reduce_mean(
+                    self.critics[i](tf.concat([
+                        obs_tf, tf.reshape(act_n, [batch_size, -1])], 1)))
                 action_reg += reg
 
             actor_grad = tape.gradient(
