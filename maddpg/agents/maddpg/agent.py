@@ -88,8 +88,10 @@ class Agent(ACAgent):
             next_target_act = self.target_actors[i](obs_next_tf)
             # batch_size * (obs_size + act_szie)
             critic_input = tf.concat([obs_next_tf, next_target_act], 1)
+            logger.info(critic_input.shape)
             # batch_size * 1
             next_target_q = self.target_critics[i](critic_input)
+            logger.info(next_target_q.shape)
             # batch_size * 1
             target_q = rew_n_tf[:, i] + self.args.gamma * \
                 (1.0 - done_n_tf[:, i]) * next_target_q
