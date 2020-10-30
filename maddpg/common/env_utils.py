@@ -35,7 +35,7 @@ def get_shapes(in_space):
 
 
 def uniform_action(action_space):
-    return [np.random.uniform(size=space.n) for space in action_space]
+    return [np.random.uniform(-1, 1, size=space.n) for space in action_space]
 
 
 def print_space_type(act_space):

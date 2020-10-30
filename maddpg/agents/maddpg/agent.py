@@ -28,12 +28,10 @@ class Agent(ACAgent):
         self.decay_step = args.decay_step
         self.decay_rate = args.decay_rate
         self.min_sigma = args.min_sigma
-        self.actor_optimizer = tf.keras.optimizers.Adam(
-            learning_rate=args.plr, beta_1=0.9, beta_2=0.999, epsilon=1e-7,
-            amsgrad=False, name='Adam')
-        self.critic_optimizer = tf.keras.optimizers.Adam(
-            learning_rate=args.qlr, beta_1=0.9, beta_2=0.999, epsilon=1e-7,
-            amsgrad=False, name='Adam')
+        self.actor_optimizers = [tf.keras.optimizers.Adam(
+            learning_rate=args.plr, name='Adam') for i in range(self.n)]
+        self.critic_optimizers = [tf.keras.optimizers.Adam(
+            learning_rate=args.qlr,  name='Adam') for i in range(self.n)]
 
     def create_actors(self):
         actors = []
@@ -59,19 +57,20 @@ class Agent(ACAgent):
         if self.step % self.decay_step == 0:
             self.sigma = max(self.sigma * self.decay_rate, self.min_sigma)
             logger.info("sigma decay to: %.3f,at %d" % (self.sigma, self.step))
-        batch_obs = np.asarray(obs)
+        batch_obs = tf.convert_to_tensor(np.asarray(obs), dtype=tf.float32)
 
-        acts = [self.actors[i](batch_obs) for i in range(self.n)]
+        acts = []
         for i in range(self.n):
-            acts[i] += tf.random.normal(
-                shape=acts[i].shape, mean=0., stddev=self.sigma,
+            act = self.actors[i](batch_obs)
+            noised_act = act + tf.random.normal(
+                shape=act.shape, mean=0., stddev=self.sigma,
                 dtype=tf.float32)
-
-        return tf.stack(acts, axis=1)
+            acts.append(tf.clip_by_value(noised_act, -1.0, 1.0))
+        acts_tf = tf.stack(acts, axis=1)
+        return acts_tf
 
     def update_params(self, obs, act_n, rew_n, next_obs, done_n):
         start = time.time()
-
         # batch_size * obs_size
         obs_tf = tf.convert_to_tensor(obs, dtype=tf.float32)
         # batch_size * obs_size
@@ -85,37 +84,30 @@ class Agent(ACAgent):
 
         critic_loss, actor_loss, action_reg = 0.0, 0.0, 0.0
 
-        next_target_acts = [self.target_actors[i](
-            obs_next_tf) for i in range(self.n)]
-
-        # batch_size * n * act_size
-        next_target_qs = []
         for i in range(self.n):
+            next_target_act = self.target_actors[i](obs_next_tf)
             # batch_size * (obs_size + act_szie)
-            critic_input = tf.concat([obs_next_tf, next_target_acts[i]], 1)
-            next_target_qs.append(self.target_critics[i](critic_input))
-        # batch_size * n
-        next_target_q = tf.concat(next_target_qs, axis=1)
+            critic_input = tf.concat([obs_next_tf, next_target_act], 1)
+            # batch_size * 1
+            next_target_q = self.target_critics[i](critic_input)
+            # batch_size * 1
+            target_q = rew_n_tf[:, i] + self.args.gamma * \
+                (1.0 - done_n_tf[:, i]) * next_target_q
 
-        # batch_size * n
-        target_q = rew_n_tf + self.args.gamma * \
-            (tf.ones(done_n_tf.shape, tf.float32) - done_n_tf) * next_target_q
-
-        for i in range(self.n):
+            # critic train
             critic_input = tf.concat([obs_tf, act_n_tf[:, i, :]], 1)
             with tf.GradientTape() as tape:
                 # batch_size * 1
                 current_q = self.critics[i](critic_input)
-                loss = tf.reduce_mean(
-                    tf.keras.losses.MSE(current_q[:, 0], target_q[:, i]))
-            critic_grad = tape.gradient(
-                loss, self.critics[i].trainable_variables)
-            self.critic_optimizer.apply_gradients(
-                zip(critic_grad, self.critics[i].trainable_variables))
-            critic_loss += loss
-
-        for i in range(self.n):
+                loss = tf.reduce_mean(tf.keras.losses.MSE(current_q, target_q))
+                critic_grad = tape.gradient(
+                    loss, self.critics[i].trainable_variables)
+                self.critic_optimizers[i].apply_gradients(
+                    zip(critic_grad, self.critics[i].trainable_variables))
+                critic_loss += loss
+            # actor train
             with tf.GradientTape() as tape:
+                # batch_size * act_size
                 action = self.actors[i](obs_tf)
                 reg = tf.norm(action, ord=2) * 1e-3
                 # batch_size * (obs_size + act_szie)
@@ -125,17 +117,17 @@ class Agent(ACAgent):
 
             actor_grad = tape.gradient(
                 loss, self.actors[i].trainable_variables)
-            self.actor_optimizer.apply_gradients(
+            self.actor_optimizers[i].apply_gradients(
                 zip(actor_grad, self.actors[i].trainable_variables))
             actor_loss += loss
 
-        for i in range(self.n):
-            update_target_variables(
-                self.target_actors[i].trainable_variables,
-                self.actors[i].trainable_variables, self.args.tau)
-            update_target_variables(
-                self.target_critics[i].trainable_variables,
-                self.critics[i].trainable_variables, self.args.tau)
+            for i in range(self.n):
+                update_target_variables(
+                    self.target_actors[i].weights,
+                    self.actors[i].weights, self.args.tau)
+                update_target_variables(
+                    self.target_critics[i].weights,
+                    self.critics[i].weights, self.args.tau)
 
         update_time = time.time() - start
         logger.debug("update_params use %.3f seconds" % update_time)

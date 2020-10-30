@@ -4,19 +4,20 @@ Distribution MADDPG using SEED_RL paradigm
 ### 参考
 - [MADDPG](https://github.com/openai/maddpg)
 - [SEED_RL](https://github.com/google-research/seed_rl)
+- [tf2rl](https://github.com/keiohta/tf2rl)
 - [Multi-Agent Actor-Critic for Mixed Cooperative-Competitive Environments](https://arxiv.org/pdf/1706.02275.pdf)
 ### Features
 - [ ] 加速
     - [x] zmq `server/client`(并没有实现seed rl的设计stream gRPC)，zmq方式
 已经加速度比较明显
     - [ ] TODO: stream gRPC batch inference + recurrent states 实现stream效果
-- [ ] 随机过程(`maddpg.distributions`):
+- [ ] 随机过程:
     - [x] `tensorflow uniform` 是目前`simple`使用的随机过程
     - [ ] ou(OrnsteinUhlenbeckProcess): TODO
-    - [ ] GaussianProcess(原:DiagGaussianPdType, Box 连续空间)
-    - [ ] SoftCategoricas(原:SoftCategoricalPdType, Discrete离散空间)
-    - [ ] SoftMultiCategorical(原:SoftMultiCategoricalPdType, MultiDiscrete连续空间)
-    - [ ] Bernoulli(原:BernoulliPdType， 多二值变量连续空间)
+    - [ ] GaussianProcess(原:DiagGaussianPdType, Box 连续空间): TODO
+    - [ ] SoftCategoricas(原:SoftCategoricalPdType, Discrete离散空间): TODO
+    - [ ] SoftMultiCategorical(原:SoftMultiCategoricalPdType, MultiDiscrete连续空间): TODO
+    - [ ] Bernoulli(原:BernoulliPdType， 多二值变量连续空间): TODO
 
 ### 快速开始
 #### ubuntu/mac

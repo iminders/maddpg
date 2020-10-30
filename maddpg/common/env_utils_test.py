@@ -17,6 +17,8 @@ class TestEnvUtils:
 
     def test_get_shapes(self):
         act_shapes = get_shapes(self.env.action_space)
+        from gym import spaces
+        assert isinstance(self.env.action_space[0], spaces.Discrete)
         assert [5, 5, 5] == act_shapes
         obs_shapes = get_shapes(self.env.observation_space)
         assert [4, 4, 4] == obs_shapes
@@ -24,12 +26,12 @@ class TestEnvUtils:
     def test_uniform_action(self):
         actions = uniform_action(self.env.action_space)
         actions = [a.tolist() for a in actions]
-        assert [0.5488135039273248, 0.7151893663724195, 0.6027633760716439,
-                0.5448831829968969, 0.4236547993389047] == actions[0]
-        assert [0.6458941130666561, 0.4375872112626925, 0.8917730007820798,
-                0.9636627605010293, 0.3834415188257777] == actions[1]
-        assert [0.7917250380826646, 0.5288949197529045, 0.5680445610939323,
-                0.925596638292661, 0.07103605819788694] == actions[2]
+        assert [0.0976270078546495, 0.43037873274483895, 0.20552675214328775,
+                0.08976636599379373, -0.15269040132219058] == actions[0]
+        assert [0.29178822613331223, -0.12482557747461498, 0.7835460015641595,
+                0.9273255210020586, -0.2331169623484446] == actions[1]
+        assert [0.5834500761653292, 0.05778983950580896, 0.13608912218786462,
+                0.8511932765853221, -0.8579278836042261] == actions[2]
 
 
 if __name__ == "__main__":

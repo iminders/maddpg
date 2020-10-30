@@ -1,14 +1,14 @@
 # -*- coding:utf-8 -*-
 
 from maddpg.common.logger import logger
-from maddpg.nets.mpl import mpl
+from maddpg.nets.mlp import MLP
 
 
 def get_actor_model(id, args, act_shapes, obs_shapes):
     logger.info("create actor nets for agent: %d" % id)
     input_size = sum(obs_shapes)
     output_size = act_shapes[id]
-    model = mpl(args.num_units, input_size, output_size, dropout=args.dropout)
+    model = MLP(args.num_units, input_size, output_size)
     if args.print_net:
         model.summary()
     return model
