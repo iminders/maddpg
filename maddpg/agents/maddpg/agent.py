@@ -69,6 +69,7 @@ class Agent(ACAgent):
         acts_tf = tf.stack(acts, axis=1)
         return acts_tf
 
+    # TODO(liuwen): tensor转换放到explore端执行，降低learner负载
     def update_params(self, obs, act_n, rew_n, next_obs, done_n):
         start = time.time()
         # batch_size * obs_size
@@ -77,10 +78,12 @@ class Agent(ACAgent):
         obs_next_tf = tf.convert_to_tensor(next_obs, dtype=tf.float32)
         # batch_size * n * act_size
         act_n_tf = tf.convert_to_tensor(act_n, dtype=tf.float32)
-        # batch_size * n
-        rew_n_tf = tf.convert_to_tensor(rew_n, dtype=tf.float32)
-        # batch_size * n
-        done_n_tf = tf.convert_to_tensor(done_n, dtype=tf.float32)
+        # batch_size * n * 1
+        rew_n_tf = tf.expand_dims(tf.convert_to_tensor(
+            rew_n, dtype=tf.float32), axis=2)
+        # batch_size * n * 1
+        done_n_tf = tf.expand_dims(tf.convert_to_tensor(
+            done_n, dtype=tf.float32), axis=2)
 
         critic_loss, actor_loss, action_reg = 0.0, 0.0, 0.0
 
@@ -88,23 +91,21 @@ class Agent(ACAgent):
             next_target_act = self.target_actors[i](obs_next_tf)
             # batch_size * (obs_size + act_szie)
             critic_input = tf.concat([obs_next_tf, next_target_act], 1)
-            logger.info(critic_input.shape)
             # batch_size * 1
             next_target_q = self.target_critics[i](critic_input)
-            logger.info(next_target_q.shape)
             # batch_size * 1
-            target_q = rew_n_tf[:, i] + self.args.gamma * \
-                (1.0 - done_n_tf[:, i]) * next_target_q
-            logger.info(target_q.shape)
+            done = done_n_tf[:, i, :]
+            # batch_size * 1
+            rew = rew_n_tf[:, i, :]
+            target_q = rew + self.args.gamma * \
+                (tf.ones(done.shape) - done) * next_target_q
 
             # critic train
             # batch_size * (obs_size + act_size)
             critic_input = tf.concat([obs_tf, act_n_tf[:, i, :]], 1)
-            logger.info(critic_input.shape)
             with tf.GradientTape() as tape:
                 # batch_size * 1
                 current_q = self.critics[i](critic_input)
-                logger.info(current_q.shape)
                 loss = tf.reduce_mean(tf.keras.losses.MSE(current_q, target_q))
                 critic_grad = tape.gradient(
                     loss, self.critics[i].trainable_variables)
