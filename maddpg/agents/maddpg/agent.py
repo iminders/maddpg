@@ -93,12 +93,16 @@ class Agent(ACAgent):
             # batch_size * 1
             target_q = rew_n_tf[:, i] + self.args.gamma * \
                 (1.0 - done_n_tf[:, i]) * next_target_q
+            logger.info(target_q.shape)
 
             # critic train
+            # batch_size * (obs_size + act_size)
             critic_input = tf.concat([obs_tf, act_n_tf[:, i, :]], 1)
+            logger.info(critic_input.shape)
             with tf.GradientTape() as tape:
                 # batch_size * 1
                 current_q = self.critics[i](critic_input)
+                logger.info(current_q.shape)
                 loss = tf.reduce_mean(tf.keras.losses.MSE(current_q, target_q))
                 critic_grad = tape.gradient(
                     loss, self.critics[i].trainable_variables)
@@ -121,13 +125,12 @@ class Agent(ACAgent):
                 zip(actor_grad, self.actors[i].trainable_variables))
             actor_loss += loss
 
-            for i in range(self.n):
-                update_target_variables(
-                    self.target_actors[i].weights,
-                    self.actors[i].weights, self.args.tau)
-                update_target_variables(
-                    self.target_critics[i].weights,
-                    self.critics[i].weights, self.args.tau)
+            update_target_variables(
+                self.target_actors[i].weights,
+                self.actors[i].weights, self.args.tau)
+            update_target_variables(
+                self.target_critics[i].weights,
+                self.critics[i].weights, self.args.tau)
 
         update_time = time.time() - start
         logger.debug("update_params use %.3f seconds" % update_time)
