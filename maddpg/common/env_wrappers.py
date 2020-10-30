@@ -16,9 +16,6 @@ class BatchedEnvironment:
           sequential ids starting from this offset.
         """
         self._batch_size = args.env_batch_size
-        # Note: some environments require an argument to be of a native Python
-        # numeric type. If we create env_ids as a numpy array,its elements will
-        # be of type np.int32. So we create it as a plain Python array first.
         env_ids = [id_offset + i for i in range(args.env_batch_size)]
         self._envs = [make_env(args, id) for id in env_ids]
         self._env_ids = np.array(env_ids, np.int32)
@@ -38,7 +35,6 @@ class BatchedEnvironment:
         dones = []
         infos = []
         for i in range(self._batch_size):
-            # action = [act for act in action_batch[i]]
             obs, reward, done, info = self._envs[i].step(action_batch[i])
             rewards.append(reward)
             dones.append(done)
@@ -81,8 +77,7 @@ class BatchedEnvironment:
             # TODO: 不同类型的action space
             act = [np.random.uniform(size=s.n) for s in e.action_space]
             acts.append(act)
-
         return acts
 
     def merge(self, item):
-        return np.concatenate(item)
+        return np.concatenate(item).astype(np.float32)

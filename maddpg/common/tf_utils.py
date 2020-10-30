@@ -19,14 +19,9 @@ def update_target_variables(target_variables,
                             name="update_target_variables"):
 
     def update_op(target_variable, source_variable, tau):
-        if tau == 1.0:
-            return target_variable.assign(source_variable, use_locking)
-        else:
-            return target_variable.assign(
-                tau * source_variable + (1.0 - tau) * target_variable,
-                use_locking)
+        return target_variable.assign(
+            tau * source_variable + (1.0 - tau) * target_variable, use_locking)
 
-    # with tf.name_scope(name, values=target_variables + source_variables):
     update_ops = [update_op(target_var, source_var, tau)
                   for target_var, source_var
                   in zip(target_variables, source_variables)]
