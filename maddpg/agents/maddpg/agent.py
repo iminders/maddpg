@@ -69,50 +69,67 @@ class Agent(ACAgent):
         acts_tf = tf.stack(acts, axis=1)
         return acts_tf
 
+    # TODO(liuwen): tensor转换放到explore端执行，降低learner负载
     def update_params(self, obs, act_n, rew_n, next_obs, done_n):
         start = time.time()
+        batch_size = obs.shape[0]
         # batch_size * obs_size
         obs_tf = tf.convert_to_tensor(obs, dtype=tf.float32)
         # batch_size * obs_size
         obs_next_tf = tf.convert_to_tensor(next_obs, dtype=tf.float32)
         # batch_size * n * act_size
         act_n_tf = tf.convert_to_tensor(act_n, dtype=tf.float32)
-        # batch_size * n
-        rew_n_tf = tf.convert_to_tensor(rew_n, dtype=tf.float32)
-        # batch_size * n
-        done_n_tf = tf.convert_to_tensor(done_n, dtype=tf.float32)
+        # batch_size * n * 1
+        rew_n_tf = tf.expand_dims(tf.convert_to_tensor(
+            rew_n, dtype=tf.float32), axis=2)
+        # batch_size * n * 1
+        done_n_tf = tf.expand_dims(tf.convert_to_tensor(
+            done_n, dtype=tf.float32), axis=2)
 
         critic_loss, actor_loss, action_reg = 0.0, 0.0, 0.0
 
         for i in range(self.n):
             next_target_act = self.target_actors[i](obs_next_tf)
+            next_target_act_n = tf.Variable(act_n_tf)
+            next_target_act_n[:, i, :].assign(next_target_act)
+
             # batch_size * (obs_size + act_szie)
-            critic_input = tf.concat([obs_next_tf, next_target_act], 1)
+            critic_input = tf.concat(
+                [obs_next_tf, tf.reshape(next_target_act_n, [batch_size, -1])],
+                1)
             # batch_size * 1
             next_target_q = self.target_critics[i](critic_input)
             # batch_size * 1
-            target_q = rew_n_tf[:, i] + self.args.gamma * \
-                (1.0 - done_n_tf[:, i]) * next_target_q
+            done = done_n_tf[:, i, :]
+            # batch_size * 1
+            rew = rew_n_tf[:, i, :]
+            target_q = rew + self.args.gamma * \
+                (tf.ones(done.shape) - done) * next_target_q
 
             # critic train
-            critic_input = tf.concat([obs_tf, act_n_tf[:, i, :]], 1)
             with tf.GradientTape() as tape:
                 # batch_size * 1
-                current_q = self.critics[i](critic_input)
-                loss = tf.reduce_mean(tf.keras.losses.MSE(current_q, target_q))
-                critic_grad = tape.gradient(
-                    loss, self.critics[i].trainable_variables)
-                self.critic_optimizers[i].apply_gradients(
-                    zip(critic_grad, self.critics[i].trainable_variables))
-                critic_loss += loss
+                loss = tf.reduce_mean(tf.keras.losses.mse(
+                    self.critics[i](tf.concat(
+                        [obs_tf, tf.reshape(act_n_tf, [batch_size, -1])],
+                        1)), target_q))
+
+            critic_grad = tape.gradient(
+                loss, self.critics[i].trainable_variables)
+            self.critic_optimizers[i].apply_gradients(
+                zip(critic_grad, self.critics[i].trainable_variables))
+            critic_loss += loss
+
             # actor train
             with tf.GradientTape() as tape:
                 # batch_size * act_size
-                action = self.actors[i](obs_tf)
-                reg = tf.norm(action, ord=2) * 1e-3
-                # batch_size * (obs_size + act_szie)
-                critic_input = tf.concat([obs_tf, action], 1)
-                loss = reg - tf.reduce_mean(self.critics[i](critic_input))
+                act = self.actors[i](obs_tf)
+                act_n = tf.Variable(act_n_tf)
+                act_n[:, i, :].assign(act)
+                reg = tf.norm(act, ord=2) * 1e-3
+                loss = reg + tf.reduce_mean(
+                    self.critics[i](tf.concat([
+                        obs_tf, tf.reshape(act_n, [batch_size, -1])], 1)))
                 action_reg += reg
 
             actor_grad = tape.gradient(
@@ -121,13 +138,12 @@ class Agent(ACAgent):
                 zip(actor_grad, self.actors[i].trainable_variables))
             actor_loss += loss
 
-            for i in range(self.n):
-                update_target_variables(
-                    self.target_actors[i].weights,
-                    self.actors[i].weights, self.args.tau)
-                update_target_variables(
-                    self.target_critics[i].weights,
-                    self.critics[i].weights, self.args.tau)
+            update_target_variables(
+                self.target_actors[i].weights,
+                self.actors[i].weights, self.args.tau)
+            update_target_variables(
+                self.target_critics[i].weights,
+                self.critics[i].weights, self.args.tau)
 
         update_time = time.time() - start
         logger.debug("update_params use %.3f seconds" % update_time)

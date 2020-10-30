@@ -33,6 +33,7 @@ class ReplayBuffer(object):
             self._storage[self._next_idx] = data
         self._next_idx = (self._next_idx + 1) % self._maxsize
 
+    # TODO(liuwen): 转换为np.array这部分操作放到environment中执行，降低learner负载
     def _encode_sample(self, idxes):
         obs_n, actions, rewards, obs_next_n, dones = [], [], [], [], []
         for i in idxes:

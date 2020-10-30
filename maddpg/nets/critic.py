@@ -6,7 +6,7 @@ from maddpg.nets.mlp import MLP
 
 def get_critic_model(id, args, act_shapes, obs_shapes):
     logger.info("create critic nets for agent: %d" % id)
-    input_size = sum(obs_shapes) + act_shapes[id]
+    input_size = sum(obs_shapes) + sum(act_shapes)
     output_size = 1
     model = MLP(args.num_units, input_size, output_size)
     if args.print_net:
