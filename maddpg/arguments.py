@@ -11,7 +11,7 @@ def parse_experiment_args():
                         help="name of the scenario script")
     parser.add_argument("--max_episode_len", type=int, default=25,
                         help="maximum episode length")
-    parser.add_argument("--num_episodes", type=int, default=30000,
+    parser.add_argument("--num_episodes", type=int, default=60000,
                         help="number of episodes")
     parser.add_argument("--num_adversaries", type=int, default=0,
                         help="number of adversaries")
