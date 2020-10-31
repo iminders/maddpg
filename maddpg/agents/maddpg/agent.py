@@ -127,7 +127,7 @@ class Agent(ACAgent):
                 act_n = tf.Variable(act_n_tf)
                 act_n[:, i, :].assign(act)
                 reg = tf.norm(act, ord=2) * 1e-3
-                loss = reg + tf.reduce_mean(
+                loss = reg - tf.reduce_mean(
                     self.critics[i](tf.concat([
                         obs_tf, tf.reshape(act_n, [batch_size, -1])], 1)))
                 action_reg += reg
