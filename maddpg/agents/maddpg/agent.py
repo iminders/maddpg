@@ -61,22 +61,22 @@ class Agent(ACAgent):
 
         acts = []
         for i in range(self.n):
-            act = self.actors[i](batch_obs)
+            act = self.actors[i](batch_obs[:, i, :])
             noised_act = act + tf.random.normal(
-                shape=act.shape, mean=0., stddev=self.sigma,
-                dtype=tf.float32)
+                shape=act.shape, stddev=self.sigma, dtype=tf.float32)
+            # TODO(liuwen): 根据act_space来clip
             acts.append(tf.clip_by_value(noised_act, -1.0, 1.0))
         acts_tf = tf.stack(acts, axis=1)
         return acts_tf
 
     # TODO(liuwen): tensor转换放到explore端执行，降低learner负载
-    def update_params(self, obs, act_n, rew_n, next_obs, done_n):
+    def update_params(self, obs_n, act_n, rew_n, next_obs_n, done_n):
         start = time.time()
-        batch_size = obs.shape[0]
-        # batch_size * obs_size
-        obs_tf = tf.convert_to_tensor(obs, dtype=tf.float32)
-        # batch_size * obs_size
-        obs_next_tf = tf.convert_to_tensor(next_obs, dtype=tf.float32)
+        batch_size = obs_n.shape[0]
+        # batch_size * n * obs_size
+        obs_n_tf = tf.convert_to_tensor(obs_n, dtype=tf.float32)
+        # batch_size  * n * obs_size
+        obs_next_n_tf = tf.convert_to_tensor(next_obs_n, dtype=tf.float32)
         # batch_size * n * act_size
         act_n_tf = tf.convert_to_tensor(act_n, dtype=tf.float32)
         # batch_size * n * 1
@@ -89,14 +89,13 @@ class Agent(ACAgent):
         critic_loss, actor_loss, action_reg = 0.0, 0.0, 0.0
 
         for i in range(self.n):
-            next_target_act = self.target_actors[i](obs_next_tf)
-            next_target_act_n = tf.Variable(act_n_tf)
-            next_target_act_n[:, i, :].assign(next_target_act)
-
-            # batch_size * (obs_size + act_szie)
+            next_target_act_n = [self.target_actors[j](obs_next_n_tf[:, i, :])
+                                 for j in range(self.n)]
+            next_target_act_n = tf.concat(next_target_act_n, axis=1)
+            # batch_size * (obs_n_size + act_n_szie)
             critic_input = tf.concat(
-                [obs_next_tf, tf.reshape(next_target_act_n, [batch_size, -1])],
-                1)
+                [tf.reshape(obs_next_n_tf, [batch_size, -1]),
+                 tf.reshape(next_target_act_n, [batch_size, -1])], 1)
             # batch_size * 1
             next_target_q = self.target_critics[i](critic_input)
             # batch_size * 1
@@ -111,7 +110,8 @@ class Agent(ACAgent):
                 # batch_size * 1
                 loss = tf.reduce_mean(tf.keras.losses.mse(
                     self.critics[i](tf.concat(
-                        [obs_tf, tf.reshape(act_n_tf, [batch_size, -1])],
+                        [tf.reshape(obs_n_tf, [batch_size, -1]),
+                         tf.reshape(act_n_tf, [batch_size, -1])],
                         1)), target_q))
 
             critic_grad = tape.gradient(
@@ -123,13 +123,18 @@ class Agent(ACAgent):
             # actor train
             with tf.GradientTape() as tape:
                 # batch_size * act_size
-                act = self.actors[i](obs_tf)
+                act = self.actors[i](obs_n_tf[:, i, :])
                 act_n = tf.Variable(act_n_tf)
                 act_n[:, i, :].assign(act)
+
+                act_n = [self.actors[j](obs_next_n_tf[:, j, :])
+                         for j in range(self.n)]
+                next_target_act_n = tf.concat(next_target_act_n, axis=1)
                 reg = tf.norm(act, ord=2) * 1e-3
                 loss = reg - tf.reduce_mean(
                     self.critics[i](tf.concat([
-                        obs_tf, tf.reshape(act_n, [batch_size, -1])], 1)))
+                        tf.reshape(obs_n_tf, [batch_size, -1]),
+                        tf.reshape(act_n, [batch_size, -1])], 1)))
                 action_reg += reg
 
             actor_grad = tape.gradient(

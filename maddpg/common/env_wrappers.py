@@ -39,7 +39,7 @@ class BatchedEnvironment:
             rewards.append(reward)
             dones.append(done)
             infos.append(info)
-            self._obs[i] = self.merge(obs)
+            self._obs[i] = self.pack(obs)
         return self._obs, rewards, dones, infos
 
     def reset(self):
@@ -79,5 +79,5 @@ class BatchedEnvironment:
             acts.append(act)
         return acts
 
-    def merge(self, item):
-        return np.concatenate(item).astype(np.float32)
+    def pack(self, item):
+        return np.array(item, dtype=np.float32)
