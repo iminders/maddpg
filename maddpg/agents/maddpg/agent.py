@@ -89,7 +89,7 @@ class Agent(ACAgent):
         critic_loss, actor_loss, action_reg = 0.0, 0.0, 0.0
 
         for i in range(self.n):
-            next_target_act_n = [self.target_actors[j](obs_next_n_tf[:, i, :])
+            next_target_act_n = [self.target_actors[j](obs_next_n_tf[:, j, :])
                                  for j in range(self.n)]
             next_target_act_n = tf.concat(next_target_act_n, axis=1)
             # batch_size * (obs_n_size + act_n_szie)
@@ -127,9 +127,6 @@ class Agent(ACAgent):
                 act_n = tf.Variable(act_n_tf)
                 act_n[:, i, :].assign(act)
 
-                act_n = [self.actors[j](obs_next_n_tf[:, j, :])
-                         for j in range(self.n)]
-                next_target_act_n = tf.concat(next_target_act_n, axis=1)
                 reg = tf.norm(act, ord=2) * 1e-3
                 loss = reg - tf.reduce_mean(
                     self.critics[i](tf.concat([
