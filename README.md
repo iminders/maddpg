@@ -21,12 +21,12 @@ Distribution MADDPG using SEED_RL paradigm
 
 ### 快速开始
 #### ubuntu/mac
- i   - 安装 `make install`
+    - 安装 `make install`
     - 单元测试 `make test`
     - 场景测试simple: `make run num_agent=3`
 
 #### 源码安装
-- iKnown dependencies: Python 3, OpenAI gym (0.10.5), tensorflow (2.3.0)
+- Known dependencies: Python 3, OpenAI gym (0.10.5), tensorflow (2.3.0)
 - 安装[Multi-Agent Particle Environments (MPE)](https://github.com/iminders/multiagent-particle-envs)
 - To install, `cd` into the root directory and type `pip install -e .`
 
@@ -47,10 +47,10 @@ Distribution MADDPG using SEED_RL paradigm
 ### 实验
 - 速度:
     - 纯CPU环境
-        - `simple agent_num=3`, 平均batch时间约为原版的1/3, [运行日志](https://github.com/iminders/maddpg/runs/1320405588?check_suite_focus=true)
+        - `simple agent_num=3`, 平均batch时间约为原版的1/3, [运行日志](TODO)
         - `simple agent_num=20`, TODO
 
 - 收敛:
     - 纯CPU环境
-        - `simple agent_num=3`, 比原版更优, [运行日志](https://github.com/iminders/maddpg/runs/1320405588?check_suite_focus=true)
+        - `simple agent_num=3`, 比原版更优, [运行日志](TODO)
         - `simple agent_num=20`, TODO
