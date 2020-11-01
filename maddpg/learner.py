@@ -57,7 +57,6 @@ def serve(agent):
     with agent.writer.as_default():
         while True:
             z = s.recv_pyobj()
-            print(len(z))
             p = zlib.decompress(z)
             data = pickle.loads(p)
             [obs, action, next_obs, rew, done, terminal] = data
