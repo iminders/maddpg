@@ -6,7 +6,7 @@ from maddpg.nets.mlp import MLP
 
 def get_actor_model(id, args, act_shapes, obs_shapes):
     logger.info("create actor nets for agent: %d" % id)
-    input_size = sum(obs_shapes)
+    input_size = obs_shapes[id]
     output_size = act_shapes[id]
     model = MLP(args.num_units, input_size, output_size)
     if args.print_net:

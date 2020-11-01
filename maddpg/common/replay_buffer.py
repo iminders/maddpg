@@ -37,8 +37,7 @@ class ReplayBuffer(object):
     def _encode_sample(self, idxes):
         obs_n, actions, rewards, obs_next_n, dones = [], [], [], [], []
         for i in idxes:
-            data = self._storage[i]
-            obs, action, reward, obs_next, done = data
+            obs, action, reward, obs_next, done = self._storage[i]
             obs_n.append(np.array(obs, copy=False))
             actions.append(np.array(action, copy=False))
             rewards.append(reward)
