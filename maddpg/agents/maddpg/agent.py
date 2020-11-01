@@ -69,7 +69,6 @@ class Agent(ACAgent):
         acts_tf = tf.stack(acts, axis=1)
         return acts_tf
 
-    # TODO(liuwen): tensor转换放到explore端执行，降低learner负载
     def update_params(self, obs_n, act_n, rew_n, next_obs_n, done_n):
         start = time.time()
         batch_size = obs_n.shape[0]
