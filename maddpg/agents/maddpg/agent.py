@@ -90,7 +90,7 @@ class Agent(ACAgent):
 
         for i in range(self.n):
             next_target_act = self.target_actors[i](obs_next_tf)
-            next_target_act_n = tf.Variable(act_n_tf)
+            next_target_act_n = tf.Variable(act_n_tf, name="tmp_next_act_n")
             next_target_act_n[:, i, :].assign(next_target_act)
 
             # batch_size * (obs_size + act_szie)
@@ -124,7 +124,7 @@ class Agent(ACAgent):
             with tf.GradientTape() as tape:
                 # batch_size * act_size
                 act = self.actors[i](obs_tf)
-                act_n = tf.Variable(act_n_tf)
+                act_n = tf.Variable(act_n_tf, name="tmp_act_n")
                 act_n[:, i, :].assign(act)
                 reg = tf.norm(act, ord=2) * 1e-3
                 loss = reg - tf.reduce_mean(

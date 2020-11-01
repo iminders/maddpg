@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+import gc
 import pickle
 import time
 import zlib
@@ -52,6 +53,7 @@ def explore(args, id):
             break
 
         if i % (10 * args.save_rate) == 0:
+            gc.collect()
             logger.debug("batch_env[%d] step:%i, episode:%s" %
                          (id, i, str(episode)))
         obs = batch_env.reset_if_done(done, terminal, episode_step, episode)
