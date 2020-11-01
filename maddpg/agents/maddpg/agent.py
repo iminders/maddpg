@@ -107,12 +107,11 @@ class Agent(ACAgent):
 
             # critic train
             with tf.GradientTape() as tape:
-                # batch_size * 1
                 loss = tf.reduce_mean(tf.keras.losses.mse(
                     self.critics[i](tf.concat(
                         [tf.reshape(obs_n_tf, [batch_size, -1]),
-                         tf.reshape(act_n_tf, [batch_size, -1])],
-                        1)), target_q))
+                         tf.reshape(act_n_tf, [batch_size, -1])], 1)),
+                    target_q))
 
             critic_grad = tape.gradient(
                 loss, self.critics[i].trainable_variables)
