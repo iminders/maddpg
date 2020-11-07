@@ -20,7 +20,7 @@ explore:
 	python3 -m maddpg.run --role explorer --save_rate=10 --num_env 2 --env_batch_size 4
 
 run: clean
-	python3 -m maddpg.run --num_agent $(num_agent)
+	python3 -m maddpg.run --num_agent $(num_agent) --print_net
 
 kill:
 	ps -ef | grep maddpg.run | awk '{print $2}' | xargs kill

@@ -38,7 +38,8 @@ if __name__ == '__main__':
     print("tensorflow version:", tf.__version__)
     num_units, input_size, output_size = 64, 10, 2
     m = MLP(num_units, input_size, output_size)
+    m.build(input_shape=(None, input_size))
     x = np.random.random((2, 10))
+    m.summary()
     y = m(x)
     print(y)
-    m.summary()

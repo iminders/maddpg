@@ -10,6 +10,7 @@ def get_actor_model(id, args, act_shapes, obs_shapes):
     output_size = act_shapes[id]
     model = MLP(args.num_units, input_size, output_size)
     if args.print_net:
+        model.build(input_shape=(None, input_size))
         model.summary()
     return model
 
