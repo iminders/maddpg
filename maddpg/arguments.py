@@ -108,4 +108,7 @@ def parse_experiment_args():
                         help="the experiment run id")
     parser.add_argument("--debug", action="store_true", default=False)
 
+    parser.add_argument('--enable_prioritized_replay',
+                        default=False, action='store_true')
+
     return parser.parse_args()

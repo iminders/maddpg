@@ -9,7 +9,7 @@ import tensorflow as tf
 
 from maddpg.common.env_utils import get_shapes, uniform_action
 from maddpg.common.logger import logger
-from maddpg.common.replay_buffer import ReplayBuffer
+from maddpg.common.replay_buffer import PrioritizedReplayBuffer, ReplayBuffer
 from maddpg.common.storage import Storage
 
 
@@ -31,7 +31,11 @@ class ACAgent:
         self.step = 0
         # s3云存储
         self.stoarge = Storage(args)
-        self.buffer = ReplayBuffer(2e5)
+        self.prioritized = args.enable_prioritized_replay
+        if self.prioritized:
+            self.buffer = PrioritizedReplayBuffer(2e5)
+        else:
+            self.buffer = ReplayBuffer(2e5)
         self.best_score = -1e6
 
     def random_action(self):
@@ -45,10 +49,17 @@ class ACAgent:
 
     def learn(self, iter=0):
         start = time.time()
-        obs, act, rew, obs_next, done = self.buffer.sample(
-            self.args.batch_size)
-        actor_loss, critic_loss, action_reg = \
-            self.update_params(obs, act, rew, obs_next, done)
+        if self.prioritized:
+            obs, act, rew, obs_next, done, ids, is_w = self.buffer.sample(
+                self.args.batch_size)
+        else:
+            is_w = None
+            obs, act, rew, obs_next, done = self.buffer.sample(
+                self.args.batch_size)
+        actor_loss, critic_loss, action_reg, abs_error = \
+            self.update_params(obs, act, rew, obs_next, done, is_w)
+        if self.prioritized:
+            self.memory.batch_update(ids, abs_error)
         update_time = time.time() - start
         avg_rew = np.mean(rew)
         if iter <= 1:

@@ -69,7 +69,7 @@ class Agent(ACAgent):
         acts_tf = tf.stack(acts, axis=1)
         return acts_tf
 
-    def update_params(self, obs_n, act_n, rew_n, next_obs_n, done_n):
+    def update_params(self, obs_n, act_n, rew_n, next_obs_n, done_n, ids, is_w):
         start = time.time()
         batch_size = obs_n.shape[0]
         # batch_size * n * obs_size
@@ -106,11 +106,11 @@ class Agent(ACAgent):
 
             # critic train
             with tf.GradientTape() as tape:
-                loss = tf.reduce_mean(tf.keras.losses.mse(
-                    self.critics[i](tf.concat(
-                        [tf.reshape(obs_n_tf, [batch_size, -1]),
-                         tf.reshape(act_n_tf, [batch_size, -1])], 1)),
-                    target_q))
+                current_q = self.critics[i](tf.concat(
+                    [tf.reshape(obs_n_tf, [batch_size, -1]),
+                     tf.reshape(act_n_tf, [batch_size, -1])], 1))
+                abs_error = tf.math.abs(current_q - target_q)
+                loss = tf.reduce_mean(tf.square(abs_error))
 
             critic_grad = tape.gradient(
                 loss, self.critics[i].trainable_variables)
@@ -147,4 +147,4 @@ class Agent(ACAgent):
 
         update_time = time.time() - start
         logger.debug("update_params use %.3f seconds" % update_time)
-        return actor_loss, critic_loss, action_reg
+        return actor_loss, critic_loss, action_reg, abs_error
