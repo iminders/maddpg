@@ -44,7 +44,7 @@ class ACAgent:
     def action(self):
         raise NotImplementedError
 
-    def update_params(self, obs, act, rew, obs_next, done):
+    def update_params(self, obs, act, rew, obs_next, done, is_w):
         raise NotImplementedError
 
     def learn(self, iter=0):
