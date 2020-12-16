@@ -59,7 +59,7 @@ class ACAgent:
         actor_loss, critic_loss, action_reg, abs_error = \
             self.update_params(obs, act, rew, obs_next, done, is_w)
         if self.prioritized:
-            self.memory.batch_update(ids, abs_error)
+            self.buffer.batch_update(ids, abs_error)
         update_time = time.time() - start
         avg_rew = np.mean(rew)
         if iter <= 1:
