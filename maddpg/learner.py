@@ -65,7 +65,7 @@ def serve(agent):
                                  next_obs[j], done[j])
             i += env_batch_size
 
-            if i % (explore_size * 10) == 0 and episode <= agent.args.warm_up:
+            if i % (explore_size * 100) == 0 and episode <= agent.args.warm_up:
                 t = time.time()
                 if episode < agent.args.save_rate:
                     mean_reward = 0.0
