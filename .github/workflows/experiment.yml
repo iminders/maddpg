@@ -23,7 +23,7 @@ jobs:
                 whoami
                 echo "run maddpg on lab"
                 pip install -e . --user
-                python -m maddpg.run --num_env 10 --env_batch_size 100 --num_agent 20 --enable_prioritized_replay
+                python -m maddpg.run --num_env 10 --env_batch_size 100 --num_agent 20 --enable_prioritized_replay --warm_up 3500
               env:
                   MADDPG_MINIO_SECRET: ${{ secrets.MADDPG_MINIO_SECRET }}
                   MADDPG_MINIO_KEY: ${{ secrets.MADDPG_MINIO_KEY }}
